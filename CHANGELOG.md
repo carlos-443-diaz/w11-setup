@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2024-12-19
+
+### Added
+- **Desktop & Taskbar Customization** - Comprehensive desktop personalization
+  - Automatic dark theme configuration for Windows 11
+  - Taskbar auto-hide functionality for maximized screen space
+  - Clean taskbar layout with removal of search box, task view, and Copilot buttons
+  - Widget configuration to disable sports content and unnecessary widgets
+  - Streamlined interface optimized for development productivity
+- **Enhanced User Experience**
+  - Updated script banner to include desktop customization
+  - Enhanced completion message with desktop configuration guidance
+  - Comprehensive post-installation verification steps for all settings
+- **Registry-based Configuration** - Professional system customization
+  - SystemUsesLightTheme and AppsUseLightTheme registry settings for dark theme
+  - TaskbarAutoHideInDesktopMode for auto-hiding taskbar
+  - SearchboxTaskbarMode, ShowTaskViewButton, and ShowCopilotButton for clean taskbar
+  - Widget and feed configuration through registry modifications
+
+### Changed
+- Updated script description to include desktop customization and theme configuration
+- Enhanced README.md with detailed desktop and taskbar customization documentation
+- Improved post-installation guidance with system verification steps
+- Expanded completion message to include desktop configuration tips
+
 ## [1.2.0] - 2024-12-19
 
 ### Added
