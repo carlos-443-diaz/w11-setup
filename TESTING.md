@@ -6,17 +6,23 @@ This document explains how to test the Windows 11 setup script.
 
 On Windows 11 with PowerShell as Administrator:
 ```powershell
-# Test with prompts
+# Test with prompts (interactive mode)
 .\setup-w11.ps1
 
-# Test silently (no prompts)
+# Test silently (minimal prompts)
 .\setup-w11.ps1 -Quiet
+
+# Test completely silent (no output)
+.\setup-w11.ps1 -Force
 
 # Test without updating winget sources
 .\setup-w11.ps1 -SkipUpdates
 
-# Test both options
-.\setup-w11.ps1 -Quiet -SkipUpdates
+# Test with specific WSL distribution
+.\setup-w11.ps1 -WSLDistro "Ubuntu-22.04"
+
+# Test fully automated installation
+.\setup-w11.ps1 -Force -SkipUpdates -WSLDistro "Debian"
 ```
 
 ## Direct Download and Run
