@@ -66,6 +66,7 @@ The script is designed to be **idempotent** - it can be run multiple times safel
 - 7zip.7zip
 - VideoLAN.VLC
 - Mozilla.Firefox
+- zen-team.zen-browser
 
 ### Media Codecs
 - 9PMMSR1CGPWG (HEIF Image Extensions)

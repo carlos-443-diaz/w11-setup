@@ -176,6 +176,7 @@ function Show-Summary {
    • 7-Zip - File archiver
    • VLC Media Player - Media player
    • Firefox - Web browser
+   • Zen Browser - Privacy-focused web browser
 
 🎬 Media Codecs:
    • HEIF Image Extensions - Modern image format support
@@ -249,6 +250,7 @@ $packages = @(
     @{Id="7zip.7zip"; Name="7-Zip"; Category="Utilities"},
     @{Id="VideoLAN.VLC"; Name="VLC Media Player"; Category="Media"},
     @{Id="Mozilla.Firefox"; Name="Firefox"; Category="Web Browser"},
+    @{Id="zen-team.zen-browser"; Name="Zen Browser"; Category="Web Browser"},
     
     # Media Codecs
     @{Id="9PMMSR1CGPWG"; Name="HEIF Image Extensions"; Category="Media Codecs"},

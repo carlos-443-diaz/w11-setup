@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.1] - 2024-12-19
+
+### Added
+- **Zen Browser** - Privacy-focused web browser with enhanced features
+  - Added zen-team.zen-browser package to Essential System Tools
+  - Updated documentation to include Zen Browser description
+  - Added to testing guide package list
+
+### Fixed
+- Resolved issue with zen and GIMP installations by adding missing Zen Browser
+- Verified GIMP.GIMP package ID is correctly configured
+
 ## [1.2.0] - 2024-12-19
 
 ### Added
