@@ -64,6 +64,43 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 .\setup-w11.ps1 -Quiet -SkipUpdates
 ```
 
+## 📦 Package Customization
+
+**NEW**: The script now allows you to customize which packages to install:
+
+1. **Interactive Mode** (default): The script will show you a numbered list of all packages and let you remove unwanted ones
+2. **Quiet Mode** (`-Quiet`): Installs all packages without prompts
+
+### How to Remove Packages
+When running interactively, you'll see a list like this:
+```
+📦 Package Selection:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The following packages will be installed:
+   1. Visual Studio Code - Microsoft.VisualStudioCode (Development)
+   2. Windows Terminal Preview - Microsoft.WindowsTerminal.Preview (Development)
+   3. Windows Subsystem for Linux - Microsoft.WSL (Development)
+   4. 1Password - AgileBits.1Password (Security)
+   5. 1Password CLI - AgileBits.1PasswordCLI (Security)
+   6. PowerToys - Microsoft.PowerToys (Productivity)
+   7. GIMP - GIMP.GIMP (Graphics)
+   8. Inkscape - Inkscape.Inkscape (Graphics)
+   9. HandBrake - HandBrake.HandBrake (Media)
+  10. 7-Zip - 7zip.7zip (Utilities)
+  11. VLC Media Player - VideoLAN.VLC (Media)
+  12. Firefox - Mozilla.Firefox (Web Browser)
+  13. HEIF Image Extensions - 9PMMSR1CGPWG (Media Codecs)
+  14. HEVC Video Extensions - 9N4WGH0Z6VHQ (Media Codecs)
+```
+
+**To remove packages**: Enter their numbers separated by commas
+- Example: `7,9,14` removes GIMP, HandBrake, and HEVC Video Extensions
+- Example: `1,2,3` removes all Development tools
+- **Press Enter** to install all packages
+
+**Input validation**: Invalid numbers and out-of-range values are ignored with warnings.
+
 ## 📋 Prerequisites
 
 - **Windows 11** (required)

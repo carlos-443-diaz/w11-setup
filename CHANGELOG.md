@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2024-12-19
+
+### Added
+- **Interactive Package Selection** - Users can now customize which packages to install
+  - Displays numbered list of all packages before installation
+  - Allows removal of unwanted packages by entering comma-separated numbers
+  - Input validation with helpful error messages for invalid entries
+  - Works in interactive mode only (skipped when using `-Quiet` flag)
+  - Examples: `7,9,14` removes GIMP, HandBrake, and HEVC Extensions
+- Enhanced user experience with clear instructions and feedback
+- Maintains backward compatibility - existing scripts work unchanged
+
+### Changed
+- Package installation workflow now includes optional customization step
+- Updated documentation with package selection examples and usage
+
 ## [1.2.0] - 2024-12-19
 
 ### Added

@@ -33,9 +33,36 @@ The script will:
 3. Verify winget is installed
 4. Update winget sources (unless -SkipUpdates is used)
 5. Show installation summary
-6. Check each package and install only if not already present (idempotent)
-7. Configure time and date settings
-8. Display completion message with next steps
+6. **NEW**: Show package selection (unless -Quiet is used)
+7. Allow user to remove unwanted packages by number
+8. Check each package and install only if not already present (idempotent)
+9. Configure time and date settings
+10. Display completion message with next steps
+
+## Package Selection Feature
+
+**NEW in v1.3.0**: The script now includes interactive package selection:
+
+### Testing Package Selection
+When running interactively (without `-Quiet`), the script will:
+1. Display a numbered list of all packages
+2. Prompt for packages to remove (comma-separated numbers)
+3. Validate input and show warnings for invalid entries
+4. Display final package list before installation
+
+### Examples to Test
+```powershell
+# Test interactive mode with package removal
+.\setup-w11.ps1
+# When prompted, try: "7,9,14" to remove GIMP, HandBrake, HEVC Extensions
+
+# Test with invalid input
+.\setup-w11.ps1
+# When prompted, try: "0,15,abc" to see error handling
+
+# Test quiet mode (skips package selection)
+.\setup-w11.ps1 -Quiet
+```
 
 ## Re-running the Script
 
