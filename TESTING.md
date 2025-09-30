@@ -33,8 +33,17 @@ The script will:
 3. Verify winget is installed
 4. Update winget sources (unless -SkipUpdates is used)
 5. Show installation summary
-6. Install each package with progress indicators
-7. Display completion message with next steps
+6. Check each package and install only if not already present (idempotent)
+7. Configure time and date settings
+8. Display completion message with next steps
+
+## Re-running the Script
+
+The script is designed to be **idempotent** - it can be run multiple times safely without causing errors or reinstalling existing packages. When run again, it will:
+- Check if each package is already installed
+- Skip installation for existing packages
+- Only install missing packages
+- Reconfigure time settings if needed
 
 ## Package Categories Installed
 
@@ -48,14 +57,25 @@ The script will:
 - AgileBits.1PasswordCLI
 - Microsoft.PowerToys
 
-### Graphics Design
+### Graphics Design & Media
 - GIMP.GIMP
 - Inkscape.Inkscape
+- HandBrake.HandBrake
 
 ### System Utilities
 - 7zip.7zip
 - VideoLAN.VLC
 - Mozilla.Firefox
+
+### Media Codecs
+- 9PMMSR1CGPWG (HEIF Image Extensions)
+- 9N4WGH0Z6VHQ (HEVC Video Extensions)
+
+### Time Configuration
+- Automatic NTP time synchronization
+- Automatic timezone detection
+- Enhanced time display format (24-hour with seconds)
+- Location-based timezone configuration
 
 ## Troubleshooting
 

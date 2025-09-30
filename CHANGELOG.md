@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2024-12-19
+
+### Added
+- **Time & Date Configuration** - Comprehensive time setup functionality
+  - Automatic time synchronization with NTP servers (time.windows.com)
+  - Automatic timezone detection and configuration
+  - Enhanced time display format (24-hour with seconds)
+  - Location-based timezone updates configuration
+- **New Media Software & Codecs**
+  - HandBrake - Video transcoder and converter
+  - HEIF Image Extensions - Modern image format support
+  - HEVC Video Extensions - Advanced video codec support
+- **Idempotent Package Installation** - Script can be run multiple times safely
+  - Checks if packages are already installed before attempting installation
+  - Prevents errors and unnecessary reinstallation
+  - Provides clear status messages for existing vs. newly installed packages
+- Updated banner and summary to reflect new features
+- Enhanced post-installation guidance for time settings verification
+
+### Changed
+- Updated script description to include time configuration and new media tools
+- Enhanced completion message with time-related next steps
+- Reorganized package categories for better organization
+- Improved package installation feedback and error handling
+
 ## [1.1.0] - 2024-09-30
 
 ### Changed
