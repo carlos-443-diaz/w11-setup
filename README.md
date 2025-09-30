@@ -40,6 +40,7 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 - **7-Zip** - File archiver for various formats
 - **VLC Media Player** - Versatile media player
 - **Firefox** - Privacy-focused web browser
+- **Zen Browser** - Privacy-focused web browser with enhanced features
 
 ### 🎬 Media Codecs
 - **HEIF Image Extensions** - Support for modern HEIF/HEIC image formats
