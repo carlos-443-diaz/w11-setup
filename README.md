@@ -31,14 +31,19 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 - **1Password CLI** - Command-line interface for WSL integration
 - **PowerToys** - Microsoft utilities for power users (FancyZones, PowerRename, etc.)
 
-### 🎨 Graphics Design
+### 🎨 Graphics Design & Media
 - **GIMP** - Professional-grade image editing software
 - **Inkscape** - Vector graphics editor for illustrations and logos
+- **HandBrake** - Video transcoder and converter for various formats
 
 ### 💻 Essential System Tools
 - **7-Zip** - File archiver for various formats
 - **VLC Media Player** - Versatile media player
 - **Firefox** - Privacy-focused web browser
+
+### 🎬 Media Codecs
+- **HEIF Image Extensions** - Support for modern HEIF/HEIC image formats
+- **HEVC Video Extensions** - Advanced H.265/HEVC video codec support
 
 ### 🕒 Time & Date Configuration
 - **Automatic Time Synchronization** - NTP time sync with time.windows.com

@@ -60,20 +60,28 @@ function Install-WingetPackage {
         [string]$Category
     )
     
-    Write-ColorOutput "`n📦 Installing $Name ($Category)..." $Blue
+    Write-ColorOutput "`n📦 Checking $Name ($Category)..." $Blue
     
     try {
         if ($PSVersionTable.Platform -eq "Unix") {
-            Write-ColorOutput "✓ [SIMULATION] Would install $Name" $Green
+            Write-ColorOutput "✓ [SIMULATION] Would check and install $Name" $Green
             Start-Sleep -Milliseconds 500  # Simulate installation time
             return
         }
         
+        # Check if package is already installed
+        $installed = winget list --id $PackageId --exact 2>$null
+        if ($LASTEXITCODE -eq 0 -and $installed -match $PackageId) {
+            Write-ColorOutput "✓ $Name is already installed" $Green
+            return
+        }
+        
+        Write-ColorOutput "  • Installing $Name..." $Blue
         $result = winget install --id $PackageId --silent --accept-package-agreements --accept-source-agreements
         if ($LASTEXITCODE -eq 0) {
             Write-ColorOutput "✓ Successfully installed $Name" $Green
         } else {
-            Write-ColorOutput "⚠ $Name may already be installed or installation completed with warnings" $Yellow
+            Write-ColorOutput "⚠ $Name installation completed with warnings" $Yellow
         }
     }
     catch {
@@ -133,7 +141,8 @@ function Show-Banner {
 ║                                                                              ║
 ║  🛠️  Software Development Tools                                              ║
 ║  🔧 Information Systems Management                                           ║
-║  🎨 Graphics Design Software                                                 ║
+║  🎨 Graphics Design & Media Tools                                            ║
+║  🎬 Media Codecs & Extensions                                                ║
 ║  🕒 Time & Date Configuration                                                ║
 ║                                                                              ║
 ║  This script will install essential software using winget package manager   ║
@@ -158,14 +167,19 @@ function Show-Summary {
    • 1Password CLI - Command-line interface for WSL integration
    • PowerToys - Windows utilities and productivity tools
 
-🎨 Graphics Design:
+🎨 Graphics Design & Media:
    • GIMP - Advanced image editing
    • Inkscape - Vector graphics editor
+   • HandBrake - Video transcoder and converter
 
 💻 System Tools:
    • 7-Zip - File archiver
    • VLC Media Player - Media player
    • Firefox - Web browser
+
+🎬 Media Codecs:
+   • HEIF Image Extensions - Modern image format support
+   • HEVC Video Extensions - Advanced video codec support
 
 🕒 Time & Date Configuration:
    • Automatic time synchronization (NTP)
@@ -226,14 +240,19 @@ $packages = @(
     @{Id="AgileBits.1PasswordCLI"; Name="1Password CLI"; Category="Security"},
     @{Id="Microsoft.PowerToys"; Name="PowerToys"; Category="Productivity"},
     
-    # Graphics Design
+    # Graphics Design & Media
     @{Id="GIMP.GIMP"; Name="GIMP"; Category="Graphics"},
     @{Id="Inkscape.Inkscape"; Name="Inkscape"; Category="Graphics"},
+    @{Id="HandBrake.HandBrake"; Name="HandBrake"; Category="Media"},
     
     # Essential System Tools
     @{Id="7zip.7zip"; Name="7-Zip"; Category="Utilities"},
     @{Id="VideoLAN.VLC"; Name="VLC Media Player"; Category="Media"},
-    @{Id="Mozilla.Firefox"; Name="Firefox"; Category="Web Browser"}
+    @{Id="Mozilla.Firefox"; Name="Firefox"; Category="Web Browser"},
+    
+    # Media Codecs
+    @{Id="9PMMSR1CGPWG"; Name="HEIF Image Extensions"; Category="Media Codecs"},
+    @{Id="9N4WGH0Z6VHQ"; Name="HEVC Video Extensions"; Category="Media Codecs"}
 )
 
 # Install each package
