@@ -6,8 +6,15 @@
 .DESCRIPTION
     This script performs initial setup for a new Windows 11 installation by installing
     essential software for software development, information systems management, graphics 
-    design, configuring system time settings, and setting up Windows Terminal with taskbar
-    integration and optimal default profiles using winget package manager.
+    design, and configuring system time settings using winget package manager.
+.PARAMETER SkipUpdates
+    Skip updating winget sources before installation
+.PARAMETER Quiet
+    Suppress interactive prompts and run with minimal output
+.PARAMETER Force
+    Force installation without any user prompts (combines with Quiet for fully automated execution)
+.PARAMETER WSLDistro
+    Specify the WSL Linux distribution to install (default: Ubuntu)
 .NOTES
     Author: Carlos Diaz
     Requires: Windows 11, Administrator privileges, winget package manager
@@ -15,7 +22,9 @@
 
 param(
     [switch]$SkipUpdates,
-    [switch]$Quiet
+    [switch]$Quiet,
+    [switch]$Force,
+    [string]$WSLDistro = "Ubuntu"
 )
 
 # Set execution policy and error handling
@@ -61,7 +70,9 @@ function Install-WingetPackage {
         [string]$Category
     )
     
-    Write-ColorOutput "`n📦 Checking $Name ($Category)..." $Blue
+    if (-not $Force -and -not $Quiet) {
+        Write-ColorOutput "`n📦 Checking $Name ($Category)..." $Blue
+    }
     
     try {
         if ($PSVersionTable.Platform -eq "Unix") {
@@ -73,65 +84,140 @@ function Install-WingetPackage {
         # Check if package is already installed
         $installed = winget list --id $PackageId --exact 2>$null
         if ($LASTEXITCODE -eq 0 -and $installed -match $PackageId) {
-            Write-ColorOutput "✓ $Name is already installed" $Green
+            if (-not $Force) {
+                Write-ColorOutput "✓ $Name is already installed" $Green
+            }
             return
         }
         
-        Write-ColorOutput "  • Installing $Name..." $Blue
-        $result = winget install --id $PackageId --silent --accept-package-agreements --accept-source-agreements
+        if (-not $Force -and -not $Quiet) {
+            Write-ColorOutput "  • Installing $Name..." $Blue
+        }
+        
+        # Use additional flags for quieter installation
+        $result = winget install --id $PackageId --silent --accept-package-agreements --accept-source-agreements --disable-interactivity
         if ($LASTEXITCODE -eq 0) {
-            Write-ColorOutput "✓ Successfully installed $Name" $Green
+            if (-not $Force) {
+                Write-ColorOutput "✓ Successfully installed $Name" $Green
+            }
         } else {
-            Write-ColorOutput "⚠ $Name installation completed with warnings" $Yellow
+            if (-not $Force) {
+                Write-ColorOutput "⚠ $Name installation completed with warnings" $Yellow
+            }
         }
     }
     catch {
-        Write-ColorOutput "✗ Failed to install $Name : $_" $Red
+        if (-not $Force) {
+            Write-ColorOutput "✗ Failed to install $Name : $_" $Red
+        }
     }
 }
 
+function Get-WSLDistroChoice {
+    if ($Force -or $Quiet) {
+        return $WSLDistro
+    }
+    
+    Write-ColorOutput "`n🐧 WSL Linux Distribution Selection" $Blue
+    Write-ColorOutput "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" $Blue
+    
+    $availableDistros = @(
+        @{Name="Ubuntu"; Description="Ubuntu - Most popular, great for beginners"},
+        @{Name="Ubuntu-22.04"; Description="Ubuntu 22.04 LTS - Long-term support version"},
+        @{Name="Ubuntu-20.04"; Description="Ubuntu 20.04 LTS - Older LTS version"},
+        @{Name="Debian"; Description="Debian - Stable and lightweight"},
+        @{Name="kali-linux"; Description="Kali Linux - Security and penetration testing"},
+        @{Name="openSUSE-Leap-15.5"; Description="openSUSE Leap - Enterprise-ready"},
+        @{Name="Alpine"; Description="Alpine Linux - Minimal and security-focused"}
+    )
+    
+    Write-ColorOutput "`nAvailable Linux distributions:" $Yellow
+    for ($i = 0; $i -lt $availableDistros.Count; $i++) {
+        $number = $i + 1
+        $distro = $availableDistros[$i]
+        Write-ColorOutput "  $number. $($distro.Description)" $White
+    }
+    
+    Write-ColorOutput "`nDefault: Ubuntu (recommended for most users)" $Green
+    $choice = Read-Host "`nEnter your choice (1-$($availableDistros.Count)) or press Enter for default"
+    
+    if ([string]::IsNullOrWhiteSpace($choice)) {
+        return "Ubuntu"
+    }
+    
+    if ($choice -match '^\d+$') {
+        $index = [int]$choice - 1
+        if ($index -ge 0 -and $index -lt $availableDistros.Count) {
+            return $availableDistros[$index].Name
+        }
+    }
+    
+    Write-ColorOutput "Invalid selection. Using default: Ubuntu" $Yellow
+    return "Ubuntu"
+}
+
 function Configure-TimeSettings {
-    Write-ColorOutput "`n🕒 Configuring time and date settings..." $Blue
+    if (-not $Force) {
+        Write-ColorOutput "`n🕒 Configuring time and date settings..." $Blue
+    }
     
     try {
         if ($PSVersionTable.Platform -eq "Unix") {
-            Write-ColorOutput "✓ [SIMULATION] Would configure time settings" $Green
+            if (-not $Force) {
+                Write-ColorOutput "✓ [SIMULATION] Would configure time settings" $Green
+            }
             return
         }
         
         # Enable automatic time synchronization
-        Write-ColorOutput "  • Enabling automatic time synchronization..." $Blue
+        if (-not $Force) {
+            Write-ColorOutput "  • Enabling automatic time synchronization..." $Blue
+        }
         w32tm /config /manualpeerlist:"time.windows.com" /syncfromflags:manual /reliable:yes /update
         w32tm /resync
         
         # Set time zone automatically (attempts to detect location-based timezone)
-        Write-ColorOutput "  • Configuring automatic timezone detection..." $Blue
+        if (-not $Force) {
+            Write-ColorOutput "  • Configuring automatic timezone detection..." $Blue
+        }
         Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\tzautoupdate" -Name "Start" -Value 3 -Force
         
         # Enable location services for timezone (if not already enabled)
         try {
             $locationConsent = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}" -Name "Value" -ErrorAction SilentlyContinue
             if ($locationConsent.Value -ne "Allow") {
-                Write-ColorOutput "  • Location services may need manual enabling for automatic timezone" $Yellow
+                if (-not $Force) {
+                    Write-ColorOutput "  • Location services may need manual enabling for automatic timezone" $Yellow
+                }
             }
         }
         catch {
-            Write-ColorOutput "  • Location settings configuration skipped" $Yellow
+            if (-not $Force) {
+                Write-ColorOutput "  • Location settings configuration skipped" $Yellow
+            }
         }
         
         # Configure NTP client for more accurate time sync
-        Write-ColorOutput "  • Configuring NTP time synchronization..." $Blue
+        if (-not $Force) {
+            Write-ColorOutput "  • Configuring NTP time synchronization..." $Blue
+        }
         w32tm /config /syncfromflags:domhier /update
         
         # Set time format to include seconds (24-hour format)
-        Write-ColorOutput "  • Setting time display format..." $Blue
+        if (-not $Force) {
+            Write-ColorOutput "  • Setting time display format..." $Blue
+        }
         Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name "sTimeFormat" -Value "HH:mm:ss" -Force
         Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name "sShortTime" -Value "HH:mm" -Force
         
-        Write-ColorOutput "✓ Time configuration completed successfully" $Green
+        if (-not $Force) {
+            Write-ColorOutput "✓ Time configuration completed successfully" $Green
+        }
     }
     catch {
-        Write-ColorOutput "⚠ Some time configuration settings may require manual setup: $_" $Yellow
+        if (-not $Force) {
+            Write-ColorOutput "⚠ Some time configuration settings may require manual setup: $_" $Yellow
+        }
     }
 }
 
@@ -255,7 +341,7 @@ function Configure-WindowsTerminalProfile {
 function Show-Banner {
     Write-ColorOutput @"
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                           Windows 11 Setup Script                           ║
+║                           Windows 11 Setup Script                            ║
 ║                                                                              ║
 ║  🛠️  Software Development Tools                                              ║
 ║  🔧 Information Systems Management                                           ║
@@ -264,8 +350,8 @@ function Show-Banner {
 ║  🕒 Time & Date Configuration                                                ║
 ║  ⚙️  Terminal Configuration & Taskbar Setup                                  ║
 ║                                                                              ║
-║  This script will install essential software using winget package manager   ║
-║  and configure system settings for an optimal development environment       ║
+║  This script will install essential software using winget package manager    ║
+║  and configure system settings for an optimal development environment        ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 "@ $Blue
 }
@@ -317,10 +403,25 @@ function Show-Summary {
 
 # Main execution starts here
 Clear-Host
-Show-Banner
 
-if (-not $Quiet) {
-    Write-ColorOutput "`n⚠️  This script requires Administrator privileges and will install multiple applications." $Yellow
+if (-not $Force) {
+    Show-Banner
+}
+
+# Check admin privileges upfront
+if ($PSVersionTable.Platform -ne "Unix") {
+    $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $isAdmin = (New-Object Security.Principal.WindowsPrincipal($currentUser)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    
+    if (-not $isAdmin) {
+        Write-ColorOutput "`n❌ This script requires Administrator privileges." $Red
+        Write-ColorOutput "Please right-click PowerShell and select 'Run as Administrator', then try again." $Yellow
+        exit 1
+    }
+}
+
+if (-not $Quiet -and -not $Force) {
+    Write-ColorOutput "`n⚠️  This script will install multiple applications and requires Administrator privileges." $Yellow
     $response = Read-Host "`nDo you want to continue? (y/N)"
     if ($response -notmatch '^[Yy]') {
         Write-ColorOutput "Installation cancelled by user." $Yellow
@@ -329,7 +430,9 @@ if (-not $Quiet) {
 }
 
 # Check if winget is available
-Write-ColorOutput "`n🔍 Checking system requirements..." $Blue
+if (-not $Force) {
+    Write-ColorOutput "`n🔍 Checking system requirements..." $Blue
+}
 if (-not (Test-WingetInstalled)) {
     Write-ColorOutput "`n❌ Winget package manager is required but not found." $Red
     Write-ColorOutput "Please install winget from the Microsoft Store (App Installer) or download from:" $Yellow
@@ -339,18 +442,29 @@ if (-not (Test-WingetInstalled)) {
 
 # Update winget sources
 if (-not $SkipUpdates) {
-    Write-ColorOutput "`n🔄 Updating winget sources..." $Blue
+    if (-not $Force) {
+        Write-ColorOutput "`n🔄 Updating winget sources..." $Blue
+    }
     if ($PSVersionTable.Platform -eq "Unix") {
-        Write-ColorOutput "✓ [SIMULATION] Would update winget sources" $Green
+        if (-not $Force) {
+            Write-ColorOutput "✓ [SIMULATION] Would update winget sources" $Green
+        }
     } else {
         winget source update
     }
 }
 
-Show-Summary
+# Get WSL distro choice
+$selectedDistro = Get-WSLDistroChoice
 
-Write-ColorOutput "`n🚀 Starting installation process..." $Green
-Write-ColorOutput "This may take several minutes depending on your internet connection..." $Yellow
+if (-not $Force) {
+    Show-Summary
+    Write-ColorOutput "`n🚀 Starting installation process..." $Green
+    Write-ColorOutput "This may take several minutes depending on your internet connection..." $Yellow
+    if ($selectedDistro -ne "Ubuntu") {
+        Write-ColorOutput "Selected WSL distribution: $selectedDistro" $Blue
+    }
+}
 
 # Define packages to install
 $packages = @(
@@ -400,8 +514,8 @@ Write-ColorOutput @"
 
 📝 Next Steps:
 1. Restart your computer to complete WSL installation and apply time settings
-2. Open Windows Terminal (now pinned to taskbar) and run 'wsl --install' to set up Linux
-3. Install Git in WSL: 'sudo apt update && sudo apt install git'
+2. Open Windows Terminal and run 'wsl --install -d $selectedDistro' to set up $selectedDistro Linux
+3. Install Git in WSL: 'sudo apt update && sudo apt install git' (for Ubuntu/Debian) or equivalent for your distro
 4. Configure Git with your credentials in WSL: 
    git config --global user.name "Your Name"
    git config --global user.email "your.email@example.com"
@@ -424,6 +538,6 @@ Write-ColorOutput @"
 Happy coding! 🚀
 "@ $Green
 
-if (-not $Quiet) {
+if (-not $Quiet -and -not $Force) {
     Read-Host "`nPress Enter to exit..."
 }

@@ -62,12 +62,39 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 # Run silently without prompts
 .\setup-w11.ps1 -Quiet
 
+# Run completely silent (no output, no prompts)
+.\setup-w11.ps1 -Force
+
 # Skip winget source updates
 .\setup-w11.ps1 -SkipUpdates
 
-# Combine options
-.\setup-w11.ps1 -Quiet -SkipUpdates
+# Specify WSL Linux distribution
+.\setup-w11.ps1 -WSLDistro "Ubuntu-22.04"
+
+# Combine options for fully automated installation
+.\setup-w11.ps1 -Force -SkipUpdates -WSLDistro "Debian"
+
+# Interactive mode with WSL distribution selection (default)
+.\setup-w11.ps1
 ```
+
+### Parameter Details
+
+- **`-Quiet`** - Suppresses interactive prompts but shows installation progress
+- **`-Force`** - Completely silent execution with no prompts or progress output
+- **`-SkipUpdates`** - Skips updating winget sources before installation
+- **`-WSLDistro`** - Specifies the Linux distribution for WSL (default: Ubuntu)
+
+### Available WSL Distributions
+
+When running interactively, you can choose from:
+- **Ubuntu** (default) - Most popular, great for beginners
+- **Ubuntu-22.04** - Long-term support version
+- **Ubuntu-20.04** - Older LTS version  
+- **Debian** - Stable and lightweight
+- **kali-linux** - Security and penetration testing
+- **openSUSE-Leap-15.5** - Enterprise-ready
+- **Alpine** - Minimal and security-focused
 
 ## 📋 Prerequisites
 
