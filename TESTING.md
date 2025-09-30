@@ -6,17 +6,23 @@ This document explains how to test the Windows 11 setup script.
 
 On Windows 11 with PowerShell as Administrator:
 ```powershell
-# Test with prompts
+# Test with prompts (interactive mode)
 .\setup-w11.ps1
 
-# Test silently (no prompts)
+# Test silently (minimal prompts)
 .\setup-w11.ps1 -Quiet
+
+# Test completely silent (no output)
+.\setup-w11.ps1 -Force
 
 # Test without updating winget sources
 .\setup-w11.ps1 -SkipUpdates
 
-# Test both options
-.\setup-w11.ps1 -Quiet -SkipUpdates
+# Test with specific WSL distribution
+.\setup-w11.ps1 -WSLDistro "Ubuntu-22.04"
+
+# Test fully automated installation
+.\setup-w11.ps1 -Force -SkipUpdates -WSLDistro "Debian"
 ```
 
 ## Direct Download and Run
@@ -38,7 +44,8 @@ The script will:
 8. Configure desktop theme and appearance
 9. Configure taskbar settings and layout
 10. Configure widget and feed preferences
-11. Display completion message with next steps
+11. Pin Windows Terminal Preview to taskbar
+12. Configure Windows Terminal default profile (WSL or PowerShell)
 
 ## Re-running the Script
 
@@ -48,6 +55,8 @@ The script is designed to be **idempotent** - it can be run multiple times safel
 - Only install missing packages
 - Reconfigure desktop and system settings if needed
 - Reconfigure time settings if needed
+- Re-pin Windows Terminal to taskbar if needed
+- Update Windows Terminal profile configuration
 
 ## Package Categories Installed
 
@@ -87,6 +96,11 @@ The script is designed to be **idempotent** - it can be run multiple times safel
 - Clean taskbar layout (search box, task view, Copilot removed)
 - Widget configuration (sports content disabled)
 - Optimized desktop layout for development
+
+### Terminal Configuration
+- Windows Terminal Preview pinned to taskbar
+- Default profile set to WSL (if available) or PowerShell
+- Optimized for development workflow
 
 ## Troubleshooting
 

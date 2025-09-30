@@ -23,7 +23,7 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 
 ### 🛠️ Software Development
 - **Visual Studio Code** - Modern code editor with extensive extensions
-- **Windows Terminal Preview** - Enhanced terminal with tabs and customization
+- **Windows Terminal Preview** - Enhanced terminal with tabs and customization (auto-pinned to taskbar)
 - **Windows Subsystem for Linux (WSL)** - Run Linux environments with Git
 
 ### 🔧 Information Systems Management
@@ -58,18 +58,50 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 - **Widget Configuration** - Disables sports content and unnecessary widgets
 - **Optimized for Productivity** - Streamlined interface for development work
 
+### ⚙️ Terminal Configuration
+- **Windows Terminal Preview** - Automatically pinned to taskbar for easy access
+- **Smart Default Profile** - WSL (if available) or PowerShell as fallback
+- **Development Optimized** - Ready for immediate development workflow
+
 ## ⚡ Script Options
 
 ```powershell
 # Run silently without prompts
 .\setup-w11.ps1 -Quiet
 
+# Run completely silent (no output, no prompts)
+.\setup-w11.ps1 -Force
+
 # Skip winget source updates
 .\setup-w11.ps1 -SkipUpdates
 
-# Combine options
-.\setup-w11.ps1 -Quiet -SkipUpdates
+# Specify WSL Linux distribution
+.\setup-w11.ps1 -WSLDistro "Ubuntu-22.04"
+
+# Combine options for fully automated installation
+.\setup-w11.ps1 -Force -SkipUpdates -WSLDistro "Debian"
+
+# Interactive mode with WSL distribution selection (default)
+.\setup-w11.ps1
 ```
+
+### Parameter Details
+
+- **`-Quiet`** - Suppresses interactive prompts but shows installation progress
+- **`-Force`** - Completely silent execution with no prompts or progress output
+- **`-SkipUpdates`** - Skips updating winget sources before installation
+- **`-WSLDistro`** - Specifies the Linux distribution for WSL (default: Ubuntu)
+
+### Available WSL Distributions
+
+When running interactively, you can choose from:
+- **Ubuntu** (default) - Most popular, great for beginners
+- **Ubuntu-22.04** - Long-term support version
+- **Ubuntu-20.04** - Older LTS version  
+- **Debian** - Stable and lightweight
+- **kali-linux** - Security and penetration testing
+- **openSUSE-Leap-15.5** - Enterprise-ready
+- **Alpine** - Minimal and security-focused
 
 ## 📋 Prerequisites
 
@@ -114,8 +146,9 @@ git config --global user.email "your.email@example.com"
 - **Remote - WSL** - Develop in WSL environments
 
 ### 5. Windows Terminal Configuration
-- Set as default terminal: Settings > Startup > Default terminal application
-- Customize themes and profiles for different shells
+- **Automatically configured** - Terminal is already pinned to taskbar with optimal default profile
+- **Default profile** - Set to WSL (if available) or PowerShell as fallback
+- **Optional customization** - Adjust themes and additional profiles in Settings as needed
 
 ### 6. Verify System Configuration
 - **Time Settings**: Check time zone in **Settings > Time & Language > Date & Time**
