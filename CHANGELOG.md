@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.3.1] - 2024-12-19
+## [1.3.1] - 2025-09-30
 
 ### Added
 - **Zen Browser** - Privacy-focused web browser with enhanced features
@@ -16,7 +16,7 @@ All notable changes to this project will be documented in this file.
 - Verified GIMP.GIMP package ID is correctly configured
 - Applied changes on top of latest main branch improvements
 
-## [1.3.0] - 2024-12-19
+## [1.3.0] - 2025-09-30
 
 ### Added
 - **Windows Terminal Configuration** - Automated terminal setup and optimization
@@ -31,7 +31,7 @@ All notable changes to this project will be documented in this file.
 - Improved completion message with terminal-specific configuration notes
 - Updated next steps guidance to reflect automated terminal setup
 
-## [1.2.0] - 2024-12-19
+## [1.2.0] - 2025-09-30
 
 ### Added
 - **Time & Date Configuration** - Comprehensive time setup functionality
@@ -56,7 +56,7 @@ All notable changes to this project will be documented in this file.
 - Reorganized package categories for better organization
 - Improved package installation feedback and error handling
 
-## [1.1.0] - 2024-09-30
+## [1.1.0] - 2025-09-29
 
 ### Changed
 - Removed Paint.NET from graphics design tools
@@ -68,7 +68,7 @@ All notable changes to this project will be documented in this file.
 - 1Password CLI for WSL integration
 - Enhanced post-installation guidance for WSL Git setup
 
-## [1.0.0] - 2024-09-30
+## [1.0.0] - 2025-09-29
 
 ### Added
 - Initial release of Windows 11 Setup Script
