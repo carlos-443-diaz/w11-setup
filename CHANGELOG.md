@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2024-12-19
+
+### Added
+- **Windows Terminal Configuration** - Automated terminal setup and optimization
+  - Automatically pins Windows Terminal Preview to taskbar for easy access
+  - Smart default profile configuration (WSL if available, PowerShell as fallback)
+  - WSL detection to determine optimal default terminal profile
+  - Enhanced user experience with automated terminal workflow setup
+
+### Changed
+- Updated script banner and description to include terminal configuration
+- Enhanced installation summary to highlight terminal optimization features
+- Improved completion message with terminal-specific configuration notes
+- Updated next steps guidance to reflect automated terminal setup
+
 ## [1.2.0] - 2024-12-19
 
 ### Added
