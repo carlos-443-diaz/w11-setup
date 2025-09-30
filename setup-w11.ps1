@@ -104,17 +104,16 @@ function Show-Summary {
 🛠️  Software Development:
    • Visual Studio Code - Modern code editor
    • Windows Terminal Preview - Enhanced terminal experience
-   • Git - Version control system
-   • Windows Subsystem for Linux (WSL) - Linux environment
+   • Windows Subsystem for Linux (WSL) - Linux environment with Git
 
 🔧 Information Systems Management:
    • 1Password - Password manager and security
+   • 1Password CLI - Command-line interface for WSL integration
    • PowerToys - Windows utilities and productivity tools
 
 🎨 Graphics Design:
    • GIMP - Advanced image editing
    • Inkscape - Vector graphics editor
-   • Paint.NET - Lightweight image editor
 
 💻 System Tools:
    • 7-Zip - File archiver
@@ -167,17 +166,16 @@ $packages = @(
     # Software Development Tools
     @{Id="Microsoft.VisualStudioCode"; Name="Visual Studio Code"; Category="Development"},
     @{Id="Microsoft.WindowsTerminal.Preview"; Name="Windows Terminal Preview"; Category="Development"},
-    @{Id="Git.Git"; Name="Git"; Category="Development"},
     @{Id="Microsoft.WSL"; Name="Windows Subsystem for Linux"; Category="Development"},
     
     # Information Systems Management
     @{Id="AgileBits.1Password"; Name="1Password"; Category="Security"},
+    @{Id="AgileBits.1PasswordCLI"; Name="1Password CLI"; Category="Security"},
     @{Id="Microsoft.PowerToys"; Name="PowerToys"; Category="Productivity"},
     
     # Graphics Design
     @{Id="GIMP.GIMP"; Name="GIMP"; Category="Graphics"},
     @{Id="Inkscape.Inkscape"; Name="Inkscape"; Category="Graphics"},
-    @{Id="dotPDN.PaintDotNet"; Name="Paint.NET"; Category="Graphics"},
     
     # Essential System Tools
     @{Id="7zip.7zip"; Name="7-Zip"; Category="Utilities"},
@@ -200,15 +198,17 @@ Write-ColorOutput @"
 📝 Next Steps:
 1. Restart your computer to complete WSL installation
 2. Open Windows Terminal and run 'wsl --install' to set up Linux
-3. Configure Git with your credentials: 
+3. Install Git in WSL: 'sudo apt update && sudo apt install git'
+4. Configure Git with your credentials in WSL: 
    git config --global user.name "Your Name"
    git config --global user.email "your.email@example.com"
-4. Launch VS Code and install your preferred extensions
-5. Set up 1Password and import your vault
+5. Set up 1Password CLI integration with WSL
+6. Launch VS Code and install your preferred extensions
 
 💡 Tips:
 • Pin frequently used applications to your taskbar
 • Configure Windows Terminal as your default terminal
+• Use 1Password CLI for secure authentication in WSL
 • Explore PowerToys features for enhanced productivity
 
 Happy coding! 🚀

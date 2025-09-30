@@ -41,17 +41,16 @@ The script will:
 ### Development Tools
 - Microsoft.VisualStudioCode
 - Microsoft.WindowsTerminal.Preview  
-- Git.Git
 - Microsoft.WSL
 
 ### Security & Productivity
 - AgileBits.1Password
+- AgileBits.1PasswordCLI
 - Microsoft.PowerToys
 
 ### Graphics Design
 - GIMP.GIMP
 - Inkscape.Inkscape
-- dotPDN.PaintDotNet
 
 ### System Utilities
 - 7zip.7zip

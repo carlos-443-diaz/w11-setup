@@ -2,12 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2024-09-30
+
+### Changed
+- Removed Paint.NET from graphics design tools
+- Removed Windows Git installation (Git now handled via WSL)
+- Removed batch file launcher (`run-setup.bat`)
+- Updated documentation to reflect WSL-based Git workflow
+
+### Added
+- 1Password CLI for WSL integration
+- Enhanced post-installation guidance for WSL Git setup
+
 ## [1.0.0] - 2024-09-30
 
 ### Added
 - Initial release of Windows 11 Setup Script
 - PowerShell script (`setup-w11.ps1`) for automated software installation
-- Batch file launcher (`run-setup.bat`) for easy execution
 - Comprehensive README.md with installation and usage instructions
 - MIT License for open source distribution
 - Testing guide (TESTING.md) with validation instructions
@@ -16,17 +27,16 @@ All notable changes to this project will be documented in this file.
 - **Software Development Tools**:
   - Visual Studio Code
   - Windows Terminal Preview
-  - Git version control
   - Windows Subsystem for Linux (WSL)
 
 - **Information Systems Management**:
   - 1Password password manager
+  - 1Password CLI for WSL integration
   - PowerToys utilities
 
 - **Graphics Design Software**:
   - GIMP image editor
   - Inkscape vector graphics
-  - Paint.NET image editor
 
 - **Essential System Tools**:
   - 7-Zip file archiver

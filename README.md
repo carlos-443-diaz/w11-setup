@@ -24,17 +24,16 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 ### 🛠️ Software Development
 - **Visual Studio Code** - Modern code editor with extensive extensions
 - **Windows Terminal Preview** - Enhanced terminal with tabs and customization
-- **Git** - Industry-standard version control system
-- **Windows Subsystem for Linux (WSL)** - Run Linux environments on Windows
+- **Windows Subsystem for Linux (WSL)** - Run Linux environments with Git
 
 ### 🔧 Information Systems Management
 - **1Password** - Secure password manager and digital vault
+- **1Password CLI** - Command-line interface for WSL integration
 - **PowerToys** - Microsoft utilities for power users (FancyZones, PowerRename, etc.)
 
 ### 🎨 Graphics Design
 - **GIMP** - Professional-grade image editing software
 - **Inkscape** - Vector graphics editor for illustrations and logos
-- **Paint.NET** - Lightweight yet powerful image editor
 
 ### 💻 Essential System Tools
 - **7-Zip** - File archiver for various formats
@@ -74,19 +73,29 @@ If winget is not available, install it from:
 wsl --install -d Ubuntu
 ```
 
-### 2. Configure Git
+### 2. Install and Configure Git in WSL
 ```bash
+# Install Git in WSL
+sudo apt update && sudo apt install git
+
+# Configure Git credentials
 git config --global user.name "Your Name"
 git config --global user.email "your.email@example.com"
 ```
 
-### 3. VS Code Extensions (Recommended)
+### 3. Set up 1Password CLI for WSL
+```bash
+# The 1Password CLI is already installed on Windows
+# Configure it for use in WSL following the official guide
+```
+
+### 4. VS Code Extensions (Recommended)
 - **GitLens** - Enhanced Git capabilities
 - **Prettier** - Code formatter
 - **Live Server** - Local development server
 - **Remote - WSL** - Develop in WSL environments
 
-### 4. Windows Terminal Configuration
+### 5. Windows Terminal Configuration
 - Set as default terminal: Settings > Startup > Default terminal application
 - Customize themes and profiles for different shells
 
