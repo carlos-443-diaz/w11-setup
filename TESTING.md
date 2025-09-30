@@ -35,7 +35,9 @@ The script will:
 5. Show installation summary
 6. Check each package and install only if not already present (idempotent)
 7. Configure time and date settings
-8. Display completion message with next steps
+8. Pin Windows Terminal Preview to taskbar
+9. Configure Windows Terminal default profile (WSL or PowerShell)
+10. Display completion message with next steps
 
 ## Re-running the Script
 
@@ -44,6 +46,8 @@ The script is designed to be **idempotent** - it can be run multiple times safel
 - Skip installation for existing packages
 - Only install missing packages
 - Reconfigure time settings if needed
+- Re-pin Windows Terminal to taskbar if needed
+- Update Windows Terminal profile configuration
 
 ## Package Categories Installed
 
@@ -76,6 +80,11 @@ The script is designed to be **idempotent** - it can be run multiple times safel
 - Automatic timezone detection
 - Enhanced time display format (24-hour with seconds)
 - Location-based timezone configuration
+
+### Terminal Configuration
+- Windows Terminal Preview pinned to taskbar
+- Default profile set to WSL (if available) or PowerShell
+- Optimized for development workflow
 
 ## Troubleshooting
 
