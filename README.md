@@ -1,6 +1,6 @@
 # Windows 11 Setup Script
 
-A comprehensive PowerShell script for setting up a new Windows 11 installation with essential software for **software development**, **information systems management**, **graphics design**, and **system time configuration**.
+A comprehensive PowerShell script for setting up a new Windows 11 installation with essential software for **software development**, **information systems management**, **graphics design**, **system time configuration**, and **terminal optimization**.
 
 ## 🚀 Quick Start
 
@@ -23,7 +23,7 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 
 ### 🛠️ Software Development
 - **Visual Studio Code** - Modern code editor with extensive extensions
-- **Windows Terminal Preview** - Enhanced terminal with tabs and customization
+- **Windows Terminal Preview** - Enhanced terminal with tabs and customization (auto-pinned to taskbar)
 - **Windows Subsystem for Linux (WSL)** - Run Linux environments with Git
 
 ### 🔧 Information Systems Management
@@ -50,6 +50,11 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 - **Timezone Detection** - Automatic timezone configuration based on location
 - **Enhanced Time Format** - 24-hour format with seconds display
 - **Location Services** - Enables location-based timezone updates
+
+### ⚙️ Terminal Configuration
+- **Windows Terminal Preview** - Automatically pinned to taskbar for easy access
+- **Smart Default Profile** - WSL (if available) or PowerShell as fallback
+- **Development Optimized** - Ready for immediate development workflow
 
 ## ⚡ Script Options
 
@@ -134,8 +139,9 @@ git config --global user.email "your.email@example.com"
 - **Remote - WSL** - Develop in WSL environments
 
 ### 5. Windows Terminal Configuration
-- Set as default terminal: Settings > Startup > Default terminal application
-- Customize themes and profiles for different shells
+- **Automatically configured** - Terminal is already pinned to taskbar with optimal default profile
+- **Default profile** - Set to WSL (if available) or PowerShell as fallback
+- **Optional customization** - Adjust themes and additional profiles in Settings as needed
 
 ### 6. Verify Time Configuration
 - Check time zone in **Settings > Time & Language > Date & Time**
