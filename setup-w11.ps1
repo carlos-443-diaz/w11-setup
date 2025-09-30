@@ -191,6 +191,76 @@ function Show-Summary {
 "@ $Blue
 }
 
+function Show-PackageSelection {
+    param(
+        [array]$Packages
+    )
+    
+    Write-ColorOutput "`n📦 Package Selection:" $Blue
+    Write-ColorOutput "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" $Blue
+    Write-ColorOutput "`nThe following packages will be installed:" $Yellow
+    
+    for ($i = 0; $i -lt $Packages.Length; $i++) {
+        $package = $Packages[$i]
+        $number = $i + 1
+        Write-ColorOutput ("  {0,2}. {1} - {2} ({3})" -f $number, $package.Name, $package.Id, $package.Category) $White
+    }
+    
+    Write-ColorOutput "`n💡 You can remove packages from the installation list by entering their numbers." $Blue
+    Write-ColorOutput "   Example: '2,5,8' to remove packages 2, 5, and 8" $Blue
+    Write-ColorOutput "   Or press Enter to install all packages" $Blue
+}
+
+function Get-FilteredPackages {
+    param(
+        [array]$Packages,
+        [string]$RemoveInput
+    )
+    
+    if ([string]::IsNullOrWhiteSpace($RemoveInput)) {
+        return $Packages
+    }
+    
+    # Parse the input - split by comma and clean up
+    $numbersToRemove = @()
+    $inputParts = $RemoveInput -split ','
+    
+    foreach ($part in $inputParts) {
+        $trimmed = $part.Trim()
+        if ($trimmed -match '^\d+$') {
+            $number = [int]$trimmed
+            if ($number -ge 1 -and $number -le $Packages.Length) {
+                $numbersToRemove += $number
+            } else {
+                Write-ColorOutput "⚠ Warning: Package number '$number' is out of range (1-$($Packages.Length))" $Yellow
+            }
+        } elseif (-not [string]::IsNullOrWhiteSpace($trimmed)) {
+            Write-ColorOutput "⚠ Warning: Invalid input '$trimmed' - expected a number" $Yellow
+        }
+    }
+    
+    if ($numbersToRemove.Length -eq 0) {
+        return $Packages
+    }
+    
+    # Remove duplicates and sort in descending order
+    $numbersToRemove = $numbersToRemove | Sort-Object -Unique -Descending
+    
+    # Create filtered package list
+    $filteredPackages = @()
+    for ($i = 0; $i -lt $Packages.Length; $i++) {
+        $packageNumber = $i + 1
+        if ($numbersToRemove -notcontains $packageNumber) {
+            $filteredPackages += $Packages[$i]
+        } else {
+            Write-ColorOutput "✗ Removed: $($Packages[$i].Name)" $Red
+        }
+    }
+    
+    Write-ColorOutput "`n✓ Final package list contains $($filteredPackages.Length) of $($Packages.Length) packages" $Green
+    return $filteredPackages
+}
+
 # Main execution starts here
 Clear-Host
 Show-Banner
@@ -225,9 +295,6 @@ if (-not $SkipUpdates) {
 
 Show-Summary
 
-Write-ColorOutput "`n🚀 Starting installation process..." $Green
-Write-ColorOutput "This may take several minutes depending on your internet connection..." $Yellow
-
 # Define packages to install
 $packages = @(
     # Software Development Tools
@@ -254,6 +321,16 @@ $packages = @(
     @{Id="9PMMSR1CGPWG"; Name="HEIF Image Extensions"; Category="Media Codecs"},
     @{Id="9N4WGH0Z6VHQ"; Name="HEVC Video Extensions"; Category="Media Codecs"}
 )
+
+# Show package selection (unless in quiet mode)
+if (-not $Quiet) {
+    Show-PackageSelection -Packages $packages
+    $removeInput = Read-Host "`nEnter package numbers to remove (comma-separated) or press Enter to install all"
+    $packages = Get-FilteredPackages -Packages $packages -RemoveInput $removeInput
+}
+
+Write-ColorOutput "`n🚀 Starting installation process..." $Green
+Write-ColorOutput "This may take several minutes depending on your internet connection..." $Yellow
 
 # Install each package
 foreach ($package in $packages) {
