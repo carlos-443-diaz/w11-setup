@@ -1,0 +1,52 @@
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# PowerShell transcript files
+PowerShell_transcript.*
+
+# Test files
+test/
+tests/
+*.test.*
+
+# IDE files
+.vs/
+.vscode/settings.json
+.vscode/launch.json
+*.suo
+*.user
+
+# Build outputs
+bin/
+obj/
+dist/
+build/
+
+# Node modules (if any scripts use Node.js)
+node_modules/
+npm-debug.log*
+
+# Python (if any Python scripts are added)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.nfs*
