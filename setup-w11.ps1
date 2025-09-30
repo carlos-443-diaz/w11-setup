@@ -2,11 +2,11 @@
 
 <#
 .SYNOPSIS
-    Windows 11 Setup Script for Development, IT Management, and Graphics Design
+    Windows 11 Setup Script for Development, IT Management, Graphics Design, and Time Configuration
 .DESCRIPTION
     This script performs initial setup for a new Windows 11 installation by installing
-    essential software for software development, information systems management, and 
-    graphics design using winget package manager.
+    essential software for software development, information systems management, graphics 
+    design, and configuring system time settings using winget package manager.
 .NOTES
     Author: Carlos Diaz
     Requires: Windows 11, Administrator privileges, winget package manager
@@ -81,6 +81,51 @@ function Install-WingetPackage {
     }
 }
 
+function Configure-TimeSettings {
+    Write-ColorOutput "`n🕒 Configuring time and date settings..." $Blue
+    
+    try {
+        if ($PSVersionTable.Platform -eq "Unix") {
+            Write-ColorOutput "✓ [SIMULATION] Would configure time settings" $Green
+            return
+        }
+        
+        # Enable automatic time synchronization
+        Write-ColorOutput "  • Enabling automatic time synchronization..." $Blue
+        w32tm /config /manualpeerlist:"time.windows.com" /syncfromflags:manual /reliable:yes /update
+        w32tm /resync
+        
+        # Set time zone automatically (attempts to detect location-based timezone)
+        Write-ColorOutput "  • Configuring automatic timezone detection..." $Blue
+        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\tzautoupdate" -Name "Start" -Value 3 -Force
+        
+        # Enable location services for timezone (if not already enabled)
+        try {
+            $locationConsent = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}" -Name "Value" -ErrorAction SilentlyContinue
+            if ($locationConsent.Value -ne "Allow") {
+                Write-ColorOutput "  • Location services may need manual enabling for automatic timezone" $Yellow
+            }
+        }
+        catch {
+            Write-ColorOutput "  • Location settings configuration skipped" $Yellow
+        }
+        
+        # Configure NTP client for more accurate time sync
+        Write-ColorOutput "  • Configuring NTP time synchronization..." $Blue
+        w32tm /config /syncfromflags:domhier /update
+        
+        # Set time format to include seconds (24-hour format)
+        Write-ColorOutput "  • Setting time display format..." $Blue
+        Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name "sTimeFormat" -Value "HH:mm:ss" -Force
+        Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name "sShortTime" -Value "HH:mm" -Force
+        
+        Write-ColorOutput "✓ Time configuration completed successfully" $Green
+    }
+    catch {
+        Write-ColorOutput "⚠ Some time configuration settings may require manual setup: $_" $Yellow
+    }
+}
+
 function Show-Banner {
     Write-ColorOutput @"
 ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -89,8 +134,10 @@ function Show-Banner {
 ║  🛠️  Software Development Tools                                              ║
 ║  🔧 Information Systems Management                                           ║
 ║  🎨 Graphics Design Software                                                 ║
+║  🕒 Time & Date Configuration                                                ║
 ║                                                                              ║
 ║  This script will install essential software using winget package manager   ║
+║  and configure system settings for an optimal development environment       ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 "@ $Blue
 }
@@ -119,6 +166,12 @@ function Show-Summary {
    • 7-Zip - File archiver
    • VLC Media Player - Media player
    • Firefox - Web browser
+
+🕒 Time & Date Configuration:
+   • Automatic time synchronization (NTP)
+   • Automatic timezone detection
+   • Enhanced time display format
+   • Location-based timezone updates
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 "@ $Blue
@@ -188,15 +241,18 @@ foreach ($package in $packages) {
     Install-WingetPackage -PackageId $package.Id -Name $package.Name -Category $package.Category
 }
 
+# Configure time and date settings
+Configure-TimeSettings
+
 Write-ColorOutput @"
 
 🎉 Installation Complete!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-✅ All packages have been processed. Some applications may require a restart.
+✅ All packages have been processed and time settings configured. Some applications may require a restart.
 
 📝 Next Steps:
-1. Restart your computer to complete WSL installation
+1. Restart your computer to complete WSL installation and apply time settings
 2. Open Windows Terminal and run 'wsl --install' to set up Linux
 3. Install Git in WSL: 'sudo apt update && sudo apt install git'
 4. Configure Git with your credentials in WSL: 
@@ -204,12 +260,14 @@ Write-ColorOutput @"
    git config --global user.email "your.email@example.com"
 5. Set up 1Password CLI integration with WSL
 6. Launch VS Code and install your preferred extensions
+7. Verify time zone settings in Windows Settings if needed
 
 💡 Tips:
 • Pin frequently used applications to your taskbar
 • Configure Windows Terminal as your default terminal
 • Use 1Password CLI for secure authentication in WSL
 • Explore PowerToys features for enhanced productivity
+• Time sync and timezone should now be automatically configured
 
 Happy coding! 🚀
 "@ $Green

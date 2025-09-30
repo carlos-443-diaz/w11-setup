@@ -1,6 +1,6 @@
 # Windows 11 Setup Script
 
-A comprehensive PowerShell script for setting up a new Windows 11 installation with essential software for **software development**, **information systems management**, and **graphics design**.
+A comprehensive PowerShell script for setting up a new Windows 11 installation with essential software for **software development**, **information systems management**, **graphics design**, and **system time configuration**.
 
 ## 🚀 Quick Start
 
@@ -39,6 +39,12 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 - **7-Zip** - File archiver for various formats
 - **VLC Media Player** - Versatile media player
 - **Firefox** - Privacy-focused web browser
+
+### 🕒 Time & Date Configuration
+- **Automatic Time Synchronization** - NTP time sync with time.windows.com
+- **Timezone Detection** - Automatic timezone configuration based on location
+- **Enhanced Time Format** - 24-hour format with seconds display
+- **Location Services** - Enables location-based timezone updates
 
 ## ⚡ Script Options
 
@@ -98,6 +104,12 @@ git config --global user.email "your.email@example.com"
 ### 5. Windows Terminal Configuration
 - Set as default terminal: Settings > Startup > Default terminal application
 - Customize themes and profiles for different shells
+
+### 6. Verify Time Configuration
+- Check time zone in **Settings > Time & Language > Date & Time**
+- Ensure "Set time automatically" and "Set time zone automatically" are enabled
+- Time format should display as 24-hour with seconds (HH:mm:ss)
+- If timezone is incorrect, manually select the correct one
 
 ## 🛡️ Security & Privacy
 

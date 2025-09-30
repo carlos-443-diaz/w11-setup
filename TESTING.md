@@ -34,7 +34,8 @@ The script will:
 4. Update winget sources (unless -SkipUpdates is used)
 5. Show installation summary
 6. Install each package with progress indicators
-7. Display completion message with next steps
+7. Configure time and date settings
+8. Display completion message with next steps
 
 ## Package Categories Installed
 
@@ -56,6 +57,12 @@ The script will:
 - 7zip.7zip
 - VideoLAN.VLC
 - Mozilla.Firefox
+
+### Time Configuration
+- Automatic NTP time synchronization
+- Automatic timezone detection
+- Enhanced time display format (24-hour with seconds)
+- Location-based timezone configuration
 
 ## Troubleshooting
 

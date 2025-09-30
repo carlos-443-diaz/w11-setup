@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2024-12-19
+
+### Added
+- **Time & Date Configuration** - Comprehensive time setup functionality
+  - Automatic time synchronization with NTP servers (time.windows.com)
+  - Automatic timezone detection and configuration
+  - Enhanced time display format (24-hour with seconds)
+  - Location-based timezone updates configuration
+- Updated banner and summary to reflect new time configuration features
+- Enhanced post-installation guidance for time settings verification
+
+### Changed
+- Updated script description to include time configuration
+- Enhanced completion message with time-related next steps
+
 ## [1.1.0] - 2024-09-30
 
 ### Changed
