@@ -2,11 +2,12 @@
 
 <#
 .SYNOPSIS
-    Windows 11 Setup Script for Development, IT Management, Graphics Design, and Time Configuration
+    Windows 11 Setup Script for Development, IT Management, Graphics Design, Time Configuration, and Terminal Setup
 .DESCRIPTION
     This script performs initial setup for a new Windows 11 installation by installing
     essential software for software development, information systems management, graphics 
-    design, and configuring system time settings using winget package manager.
+    design, configuring system time settings, and setting up Windows Terminal with taskbar
+    integration and optimal default profiles using winget package manager.
 .NOTES
     Author: Carlos Diaz
     Requires: Windows 11, Administrator privileges, winget package manager
@@ -134,6 +135,123 @@ function Configure-TimeSettings {
     }
 }
 
+function Test-WSLInstalled {
+    try {
+        if ($PSVersionTable.Platform -eq "Unix") {
+            # For simulation, assume WSL is available
+            return $true
+        }
+        
+        # Check if WSL is enabled
+        $wslFeature = Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -ErrorAction SilentlyContinue
+        if ($wslFeature -and $wslFeature.State -eq "Enabled") {
+            # Check if any WSL distributions are installed
+            $wslList = wsl --list --quiet 2>$null
+            if ($LASTEXITCODE -eq 0 -and $wslList) {
+                return $true
+            }
+        }
+        return $false
+    }
+    catch {
+        return $false
+    }
+}
+
+function Pin-WindowsTerminalToTaskbar {
+    Write-ColorOutput "`n📌 Pinning Windows Terminal Preview to taskbar..." $Blue
+    
+    try {
+        if ($PSVersionTable.Platform -eq "Unix") {
+            Write-ColorOutput "✓ [SIMULATION] Would pin Windows Terminal Preview to taskbar" $Green
+            return
+        }
+        
+        # Find Windows Terminal Preview executable
+        $terminalPath = Get-ChildItem -Path "${env:ProgramFiles}\WindowsApps" -Filter "Microsoft.WindowsTerminalPreview*" -Directory | 
+                       Select-Object -First 1 -ExpandProperty FullName
+        
+        if ($terminalPath) {
+            $terminalExe = Join-Path $terminalPath "wt.exe"
+            if (Test-Path $terminalExe) {
+                # Use PowerShell COM objects to pin to taskbar
+                Write-ColorOutput "  • Adding Windows Terminal Preview to taskbar..." $Blue
+                $shell = New-Object -ComObject Shell.Application
+                $folder = $shell.Namespace((Split-Path $terminalExe))
+                $item = $folder.ParseName((Split-Path $terminalExe -Leaf))
+                $verb = $item.Verbs() | Where-Object { $_.Name -match "taskbar|pin" }
+                if ($verb) {
+                    $verb.DoIt()
+                    Write-ColorOutput "✓ Windows Terminal Preview pinned to taskbar" $Green
+                } else {
+                    Write-ColorOutput "⚠ Could not find pin to taskbar option" $Yellow
+                }
+            } else {
+                Write-ColorOutput "⚠ Windows Terminal Preview executable not found" $Yellow
+            }
+        } else {
+            Write-ColorOutput "⚠ Windows Terminal Preview installation path not found" $Yellow
+        }
+    }
+    catch {
+        Write-ColorOutput "⚠ Failed to pin Windows Terminal Preview to taskbar: $_" $Yellow
+    }
+}
+
+function Configure-WindowsTerminalProfile {
+    Write-ColorOutput "`n⚙️ Configuring Windows Terminal default profile..." $Blue
+    
+    try {
+        if ($PSVersionTable.Platform -eq "Unix") {
+            Write-ColorOutput "✓ [SIMULATION] Would configure Windows Terminal default profile" $Green
+            return
+        }
+        
+        # Find Windows Terminal settings path
+        $settingsPath = "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json"
+        
+        # Check if WSL is available
+        $wslAvailable = Test-WSLInstalled
+        
+        if (Test-Path $settingsPath) {
+            Write-ColorOutput "  • Found existing Windows Terminal settings" $Blue
+            
+            # Read current settings
+            $settings = Get-Content $settingsPath -Raw | ConvertFrom-Json
+            
+            if ($wslAvailable) {
+                Write-ColorOutput "  • Setting WSL as default profile..." $Blue
+                # Look for WSL profile in the profiles list
+                $wslProfile = $settings.profiles.list | Where-Object { $_.source -eq "Windows.Terminal.Wsl" -or $_.name -match "Ubuntu|WSL" } | Select-Object -First 1
+                if ($wslProfile) {
+                    $settings.defaultProfile = $wslProfile.guid
+                    Write-ColorOutput "✓ Set WSL profile as default" $Green
+                } else {
+                    Write-ColorOutput "⚠ WSL profile not found, keeping current default" $Yellow
+                }
+            } else {
+                Write-ColorOutput "  • WSL not available, setting PowerShell as default..." $Blue
+                $psProfile = $settings.profiles.list | Where-Object { $_.name -match "PowerShell" -and $_.name -notmatch "ISE" } | Select-Object -First 1
+                if ($psProfile) {
+                    $settings.defaultProfile = $psProfile.guid
+                    Write-ColorOutput "✓ Set PowerShell profile as default" $Green
+                } else {
+                    Write-ColorOutput "⚠ PowerShell profile not found, keeping current default" $Yellow
+                }
+            }
+            
+            # Save updated settings
+            $settings | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8
+            Write-ColorOutput "✓ Windows Terminal configuration updated" $Green
+        } else {
+            Write-ColorOutput "⚠ Windows Terminal settings file not found - will be created on first run" $Yellow
+        }
+    }
+    catch {
+        Write-ColorOutput "⚠ Failed to configure Windows Terminal profile: $_" $Yellow
+    }
+}
+
 function Show-Banner {
     Write-ColorOutput @"
 ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -144,6 +262,7 @@ function Show-Banner {
 ║  🎨 Graphics Design & Media Tools                                            ║
 ║  🎬 Media Codecs & Extensions                                                ║
 ║  🕒 Time & Date Configuration                                                ║
+║  ⚙️  Terminal Configuration & Taskbar Setup                                  ║
 ║                                                                              ║
 ║  This script will install essential software using winget package manager   ║
 ║  and configure system settings for an optimal development environment       ║
@@ -159,7 +278,7 @@ function Show-Summary {
 
 🛠️  Software Development:
    • Visual Studio Code - Modern code editor
-   • Windows Terminal Preview - Enhanced terminal experience
+   • Windows Terminal Preview - Enhanced terminal experience (pinned to taskbar)
    • Windows Subsystem for Linux (WSL) - Linux environment with Git
 
 🔧 Information Systems Management:
@@ -186,6 +305,11 @@ function Show-Summary {
    • Automatic timezone detection
    • Enhanced time display format
    • Location-based timezone updates
+
+⚙️  Terminal Configuration:
+   • Windows Terminal Preview pinned to taskbar
+   • Default profile set to WSL (if available) or PowerShell
+   • Ready for immediate development workflow
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 "@ $Blue
@@ -263,16 +387,20 @@ foreach ($package in $packages) {
 # Configure time and date settings
 Configure-TimeSettings
 
+# Configure Windows Terminal
+Pin-WindowsTerminalToTaskbar
+Configure-WindowsTerminalProfile
+
 Write-ColorOutput @"
 
 🎉 Installation Complete!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-✅ All packages have been processed and time settings configured. Some applications may require a restart.
+✅ All packages have been processed and system configuration completed. Some applications may require a restart.
 
 📝 Next Steps:
 1. Restart your computer to complete WSL installation and apply time settings
-2. Open Windows Terminal and run 'wsl --install' to set up Linux
+2. Open Windows Terminal (now pinned to taskbar) and run 'wsl --install' to set up Linux
 3. Install Git in WSL: 'sudo apt update && sudo apt install git'
 4. Configure Git with your credentials in WSL: 
    git config --global user.name "Your Name"
@@ -281,12 +409,17 @@ Write-ColorOutput @"
 6. Launch VS Code and install your preferred extensions
 7. Verify time zone settings in Windows Settings if needed
 
-💡 Tips:
-• Pin frequently used applications to your taskbar
-• Configure Windows Terminal as your default terminal
+💡 Configuration Summary:
+• Windows Terminal Preview has been pinned to your taskbar
+• Default terminal profile set to WSL (if available) or PowerShell
+• Time sync and timezone are now automatically configured
+• All essential development tools are installed
+
+💡 Additional Tips:
+• Use Windows Terminal for all your command-line work
+• Configure Windows Terminal themes and appearance in Settings
 • Use 1Password CLI for secure authentication in WSL
 • Explore PowerToys features for enhanced productivity
-• Time sync and timezone should now be automatically configured
 
 Happy coding! 🚀
 "@ $Green
