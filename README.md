@@ -1,6 +1,6 @@
 # Windows 11 Setup Script
 
-A comprehensive PowerShell script for setting up a new Windows 11 installation with essential software for **software development**, **information systems management**, **graphics design**, and **system time configuration**.
+A comprehensive PowerShell script for setting up a new Windows 11 installation with essential software for **software development**, **information systems management**, **graphics design**, **system time configuration**, and **desktop customization**.
 
 ## 🚀 Quick Start
 
@@ -50,6 +50,13 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 - **Timezone Detection** - Automatic timezone configuration based on location
 - **Enhanced Time Format** - 24-hour format with seconds display
 - **Location Services** - Enables location-based timezone updates
+
+### 🖥️ Desktop & Taskbar Customization
+- **Dark Theme** - Configures Windows 11 to use dark theme system-wide
+- **Taskbar Auto-Hide** - Enables automatic taskbar hiding for more screen space
+- **Clean Taskbar Layout** - Removes search box, task view, and Copilot buttons
+- **Widget Configuration** - Disables sports content and unnecessary widgets
+- **Optimized for Productivity** - Streamlined interface for development work
 
 ## ⚡ Script Options
 
@@ -110,11 +117,23 @@ git config --global user.email "your.email@example.com"
 - Set as default terminal: Settings > Startup > Default terminal application
 - Customize themes and profiles for different shells
 
-### 6. Verify Time Configuration
-- Check time zone in **Settings > Time & Language > Date & Time**
-- Ensure "Set time automatically" and "Set time zone automatically" are enabled
-- Time format should display as 24-hour with seconds (HH:mm:ss)
-- If timezone is incorrect, manually select the correct one
+### 6. Verify System Configuration
+- **Time Settings**: Check time zone in **Settings > Time & Language > Date & Time**
+  - Ensure "Set time automatically" and "Set time zone automatically" are enabled
+  - Time format should display as 24-hour with seconds (HH:mm:ss)
+  - If timezone is incorrect, manually select the correct one
+- **Desktop Theme**: Verify dark theme is applied in **Settings > Personalization > Colors**
+  - Choose "Dark" mode for better visual consistency
+- **Taskbar Settings**: Check taskbar configuration in **Settings > Personalization > Taskbar**
+  - Taskbar should auto-hide (move mouse to bottom to reveal)
+  - Search, Task view, and widget buttons should be hidden
+  - Verify clean, minimal taskbar layout
+
+### 7. Additional Customizations (Optional)
+- **PowerToys Configuration**: Launch PowerToys and configure FancyZones for window management
+- **Terminal Themes**: Customize Windows Terminal with your preferred color scheme
+- **VS Code Theme**: Install a dark theme extension if desired (e.g., One Dark Pro)
+- **Taskbar Icons**: Pin your most-used applications to the auto-hiding taskbar
 
 ## 🛡️ Security & Privacy
 
