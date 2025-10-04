@@ -26,10 +26,10 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 - **Windows Terminal Preview** - Enhanced terminal with tabs and customization (auto-pinned to taskbar)
 - **Windows Subsystem for Linux (WSL)** - Run Linux environments with Git
 - **Claude Code** - AI-powered coding assistant for enhanced productivity
+- **UV** - Fast Python package installer and resolver for modern Python development
 
 ### 🔧 Information Systems Management
 - **1Password** - Secure password manager and digital vault
-- **1Password CLI** - Command-line interface for WSL integration
 - **PowerToys** - Microsoft utilities for power users (FancyZones, PowerRename, etc.)
 
 ### 🎨 Graphics Design & Media
@@ -45,7 +45,6 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 
 ### 🎬 Media Codecs
 - **HEIF Image Extensions** - Support for modern HEIF/HEIC image formats
-- **HEVC Video Extensions** - Advanced H.265/HEVC video codec support
 
 ### 🕒 Time & Date Configuration
 - **Automatic Time Synchronization** - NTP time sync with time.windows.com
@@ -135,24 +134,18 @@ git config --global user.name "Your Name"
 git config --global user.email "your.email@example.com"
 ```
 
-### 3. Set up 1Password CLI for WSL
-```bash
-# The 1Password CLI is already installed on Windows
-# Configure it for use in WSL following the official guide
-```
-
-### 4. VS Code Extensions (Recommended)
+### 3. VS Code Extensions (Recommended)
 - **GitLens** - Enhanced Git capabilities
 - **Prettier** - Code formatter
 - **Live Server** - Local development server
 - **Remote - WSL** - Develop in WSL environments
 
-### 5. Windows Terminal Configuration
+### 4. Windows Terminal Configuration
 - **Automatically configured** - Terminal is already pinned to taskbar with optimal default profile
 - **Default profile** - Set to WSL (if available) or PowerShell as fallback
 - **Optional customization** - Adjust themes and additional profiles in Settings as needed
 
-### 6. Verify System Configuration
+### 5. Verify System Configuration
 - **Time Settings**: Check time zone in **Settings > Time & Language > Date & Time**
   - Ensure "Set time automatically" and "Set time zone automatically" are enabled
   - Time format should display as 24-hour with seconds (HH:mm:ss)
