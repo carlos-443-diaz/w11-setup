@@ -26,10 +26,10 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 - **Windows Terminal Preview** - Enhanced terminal with tabs and customization (auto-pinned to taskbar)
 - **Windows Subsystem for Linux (WSL)** - Run Linux environments with Git
 - **Claude Code** - AI-powered coding assistant for enhanced productivity
+- **UV** - Fast Python package installer and resolver for modern Python development
 
 ### 🔧 Information Systems Management
 - **1Password** - Secure password manager and digital vault
-- **1Password CLI** - Command-line interface for WSL integration
 - **PowerToys** - Microsoft utilities for power users (FancyZones, PowerRename, etc.)
 
 ### 🎨 Graphics Design & Media
@@ -45,7 +45,6 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 
 ### 🎬 Media Codecs
 - **HEIF Image Extensions** - Support for modern HEIF/HEIC image formats
-- **HEVC Video Extensions** - Advanced H.265/HEVC video codec support
 
 ### 🕒 Time & Date Configuration
 - **Automatic Time Synchronization** - NTP time sync with time.windows.com
@@ -135,24 +134,18 @@ git config --global user.name "Your Name"
 git config --global user.email "your.email@example.com"
 ```
 
-### 3. Set up 1Password CLI for WSL
-```bash
-# The 1Password CLI is already installed on Windows
-# Configure it for use in WSL following the official guide
-```
-
-### 4. VS Code Extensions (Recommended)
+### 3. VS Code Extensions (Recommended)
 - **GitLens** - Enhanced Git capabilities
 - **Prettier** - Code formatter
 - **Live Server** - Local development server
 - **Remote - WSL** - Develop in WSL environments
 
-### 5. Windows Terminal Configuration
+### 4. Windows Terminal Configuration
 - **Automatically configured** - Terminal is already pinned to taskbar with optimal default profile
 - **Default profile** - Set to WSL (if available) or PowerShell as fallback
 - **Optional customization** - Adjust themes and additional profiles in Settings as needed
 
-### 6. Verify System Configuration
+### 5. Verify System Configuration
 - **Time Settings**: Check time zone in **Settings > Time & Language > Date & Time**
   - Ensure "Set time automatically" and "Set time zone automatically" are enabled
   - Time format should display as 24-hour with seconds (HH:mm:ss)
@@ -187,15 +180,82 @@ This script:
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-### Package Installation Fails
-- Ensure you have an active internet connection
-- Try running `winget source update` manually
-- Some packages may require a system restart
+### Package Installation Warnings
+
+Some packages may show warnings during installation. Here's what they mean:
+
+#### Package Not Found
+- **Issue**: Packages like "1Password CLI" or "HEVC Video Extensions" may not be available in winget
+- **Solution**: These packages are now removed from the script or can be installed manually from:
+  - Microsoft Store (for Store-exclusive packages)
+  - Official vendor websites
+  - The script will skip unavailable packages automatically
+
+#### PowerToys Installation Error
+- **Issue**: PowerToys may fail with installer error (exit code 2147942526)
+- **Possible causes**: 
+  - Previous version conflict
+  - Windows system files need repair
+  - Pending system updates
+- **Solution**:
+  1. Uninstall any existing PowerToys version
+  2. Run Windows Update and install all updates
+  3. Restart your computer
+  4. Try installing PowerToys manually from [Microsoft PowerToys GitHub](https://github.com/microsoft/PowerToys/releases)
+
+#### Package Already at Latest Version
+- **Issue**: Warning about "No available upgrade found"
+- **This is normal**: The script checks if packages are installed and tries to ensure latest version
+- **No action needed**: Package is already up-to-date
 
 ### WSL Installation Issues
+
+#### Interactive Username Prompts
+- **Issue**: WSL may try to prompt for username during script execution (now resolved)
+- **Solution**: Script now uses `--no-launch` flag to prevent this
+- **First Launch**: After restart, run `wsl -d <distro-name>` to complete username/password setup
+
+#### WSL Not Available After Installation
 - Enable "Windows Subsystem for Linux" in Windows Features
 - Restart your computer after the initial script run
-- Run `wsl --install` manually if needed
+- Run `wsl --install -d <distro-name>` manually if needed
+
+### Windows Terminal Taskbar Pinning
+
+#### Access Denied Error
+- **Issue**: Windows 11 restricts programmatic taskbar pinning for security
+- **This is a Windows limitation**: PowerShell COM automation may be blocked
+- **Solution**: Manually pin Windows Terminal:
+  1. Open Start Menu
+  2. Search for "Windows Terminal"
+  3. Right-click and select "Pin to taskbar"
+
+### Location Services and Timezone
+
+#### Automatic Timezone Not Working
+- **Issue**: Location services may need manual enabling
+- **Solution**:
+  1. Open **Settings > Privacy & Security > Location**
+  2. Enable "Location services"
+  3. Allow apps to access location
+  4. Timezone should now update automatically
+
+### Taskbar Widget Settings
+
+#### Widget Configuration Warning
+- **Issue**: Some registry settings may not apply immediately
+- **Solution**:
+  - Restart Windows Explorer: `taskkill /f /im explorer.exe && start explorer`
+  - Or restart your computer
+  - Some settings may require manual configuration in Windows Settings
+
+### Known Limitations
+
+The following cannot be fully automated due to Windows 11 security restrictions:
+- **Taskbar pinning**: Requires manual user action in most cases
+- **Location services**: Must be enabled manually by user for privacy reasons
+- **Some registry settings**: May require restart or manual confirmation
+- **Store-exclusive packages**: Cannot be installed via winget (HEVC extensions, etc.)
 
 ## 🤝 Contributing
 

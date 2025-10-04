@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.4] - 2025-10-04
+
+### Added
+- **UV Python Package Manager** (Issue #13)
+  - Added astral-sh.uv package for fast Python package installation and resolution
+  - UV provides modern Python dependency management with faster resolution than pip
+  - Updated installation summary to include UV in development tools
+
+### Fixed
+- **Package Installation Improvements** (Issue #13)
+  - Removed 1Password CLI (AgileBits.1PasswordCLI) - package not available in winget
+  - Removed HEVC Video Extensions (9N4WGH0Z6VHQ) - not available on all systems
+  - Improved error handling for package not found errors (exit code -1978335212)
+  - Better handling of already-installed packages with upgrade checks (exit code -1978335189)
+  - Now shows "already at latest version" instead of warning for up-to-date packages
+  
+- **WSL Installation Enhancements** (Issue #13)
+  - Added `--no-launch` flag to WSL installation to prevent interactive username prompts during script execution
+  - First launch of WSL after restart will prompt for username and password setup
+  - Prevents installation failures due to interactive prompts
+  - Better user guidance on completing WSL setup after restart
+
+- **Windows Terminal Taskbar Pinning** (Issue #13)
+  - Improved error handling for taskbar pinning access denied errors
+  - Added user-friendly instructions for manual pinning when automated pinning fails
+  - Better logging of pinning failures with actionable guidance
+  - Added notes about Windows 11 security restrictions on programmatic taskbar pinning
+
+### Changed
+- **Enhanced Error Reporting**
+  - Install-WingetPackage now handles specific exit codes with appropriate messages
+  - Better differentiation between package not found vs installation warnings
+  - Improved user feedback for packages that are already up-to-date
+  - More informative logging for troubleshooting
+
+- **Updated Documentation**
+  - Removed references to 1Password CLI from installation summary and tips
+  - Updated completion message to clarify WSL first-launch setup process
+  - Added guidance for manual Windows Terminal taskbar pinning
+  - Clearer instructions for post-restart WSL configuration
+
 ## [1.3.3] - 2025-10-04
 
 ### Fixed

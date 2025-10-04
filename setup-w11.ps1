@@ -119,6 +119,7 @@ function Install-WingetPackage {
             if (-not $Force) {
                 Write-ColorOutput "✓ $Name is already installed" $Green
             }
+            Write-Log -Message "$Name is already installed (ID: $PackageId)" -Level "INFO"
             return
         }
         
@@ -128,17 +129,33 @@ function Install-WingetPackage {
         
         # Use additional flags for quieter installation
         $result = winget install --id $PackageId --silent --accept-package-agreements --accept-source-agreements --disable-interactivity 2>&1
-        if ($LASTEXITCODE -eq 0) {
+        $exitCode = $LASTEXITCODE
+        
+        # Check for specific error codes
+        if ($exitCode -eq 0) {
             if (-not $Force) {
                 Write-ColorOutput "✓ Successfully installed $Name" $Green
             }
             Write-Log -Message "Successfully installed $Name (ID: $PackageId)" -Level "SUCCESS"
-        } else {
+        } elseif ($exitCode -eq -1978335212) {
+            # Package not found in winget repositories
             if (-not $Force) {
-                Write-ColorOutput "⚠ $Name installation completed with warnings" $Yellow
+                Write-ColorOutput "⚠ $Name not found in winget repositories - skipping" $Yellow
+            }
+            Write-Log -Message "$Name (ID: $PackageId) not found in winget repositories. May require Microsoft Store or manual installation." -Level "WARNING"
+        } elseif ($exitCode -eq -1978335189) {
+            # No upgrade available (package already at latest version)
+            if (-not $Force) {
+                Write-ColorOutput "✓ $Name is already at the latest version" $Green
+            }
+            Write-Log -Message "$Name is already at the latest version (ID: $PackageId)" -Level "INFO"
+        } else {
+            # Other installation issues
+            if (-not $Force) {
+                Write-ColorOutput "⚠ $Name installation completed with warnings (exit code: $exitCode)" $Yellow
                 Write-ColorOutput "  See log file for details: $ErrorLog" $Yellow
             }
-            Write-Log -Message "Installation of $Name (ID: $PackageId) completed with exit code $LASTEXITCODE. Output: $result" -Level "WARNING"
+            Write-Log -Message "Installation of $Name (ID: $PackageId) completed with exit code $exitCode. Output: $result" -Level "WARNING"
         }
     }
     catch {
@@ -319,23 +336,26 @@ function Install-WSLDistribution {
             return
         }
         
-        # Install the distribution
+        # Install the distribution with --no-launch to avoid interactive prompts
         if (-not $Force) {
             Write-ColorOutput "  • Installing $DistroName distribution..." $Blue
             Write-ColorOutput "  • This may take several minutes..." $Yellow
+            Write-ColorOutput "  • Note: First launch will require setting up a username and password" $Yellow
         }
         
-        # Run wsl --install with the specific distro and capture output
-        $installOutput = wsl --install -d $DistroName 2>&1
+        # Run wsl --install with the specific distro using --no-launch to avoid interactive setup
+        $installOutput = wsl --install -d $DistroName --no-launch 2>&1
         $exitCode = $LASTEXITCODE
         
         Write-Log -Message "WSL install command for $DistroName completed with exit code: $exitCode. Output: $installOutput" -Level "INFO"
         
         if ($exitCode -eq 0) {
             if (-not $Force) {
-                Write-ColorOutput "✓ Successfully installed $DistroName" $Green
+                Write-ColorOutput "✓ Successfully downloaded $DistroName" $Green
+                Write-ColorOutput "  • First launch will prompt for username and password setup" $Blue
+                Write-ColorOutput "  • Run 'wsl -d $DistroName' after restart to complete setup" $Blue
             }
-            Write-Log -Message "Successfully installed WSL distribution: $DistroName" -Level "SUCCESS"
+            Write-Log -Message "Successfully installed WSL distribution: $DistroName (first launch required)" -Level "SUCCESS"
         } else {
             if (-not $Force) {
                 Write-ColorOutput "⚠ $DistroName installation may require additional steps or a restart" $Yellow
@@ -364,24 +384,41 @@ function Pin-WindowsTerminalToTaskbar {
             return
         }
         
+        # Note: Programmatic taskbar pinning is restricted in Windows 11
+        # This function attempts to pin but may require manual action
+        if (-not $Force) {
+            Write-ColorOutput "  • Note: Windows 11 may restrict programmatic taskbar pinning" $Yellow
+            Write-ColorOutput "  • You may need to manually pin Windows Terminal to taskbar" $Yellow
+        }
+        
         # Find Windows Terminal Preview executable
-        $terminalPath = Get-ChildItem -Path "${env:ProgramFiles}\WindowsApps" -Filter "Microsoft.WindowsTerminalPreview*" -Directory | 
+        $terminalPath = Get-ChildItem -Path "${env:ProgramFiles}\WindowsApps" -Filter "Microsoft.WindowsTerminalPreview*" -Directory -ErrorAction SilentlyContinue | 
                        Select-Object -First 1 -ExpandProperty FullName
         
         if ($terminalPath) {
             $terminalExe = Join-Path $terminalPath "wt.exe"
             if (Test-Path $terminalExe) {
                 # Use PowerShell COM objects to pin to taskbar
-                Write-ColorOutput "  • Adding Windows Terminal Preview to taskbar..." $Blue
-                $shell = New-Object -ComObject Shell.Application
-                $folder = $shell.Namespace((Split-Path $terminalExe))
-                $item = $folder.ParseName((Split-Path $terminalExe -Leaf))
-                $verb = $item.Verbs() | Where-Object { $_.Name -match "taskbar|pin" }
-                if ($verb) {
-                    $verb.DoIt()
-                    Write-ColorOutput "✓ Windows Terminal Preview pinned to taskbar" $Green
-                } else {
-                    Write-ColorOutput "⚠ Could not find pin to taskbar option" $Yellow
+                Write-ColorOutput "  • Attempting to add Windows Terminal Preview to taskbar..." $Blue
+                try {
+                    $shell = New-Object -ComObject Shell.Application
+                    $folder = $shell.Namespace((Split-Path $terminalExe))
+                    $item = $folder.ParseName((Split-Path $terminalExe -Leaf))
+                    $verb = $item.Verbs() | Where-Object { $_.Name -match "taskbar|pin" }
+                    if ($verb) {
+                        $verb.DoIt()
+                        Write-ColorOutput "✓ Windows Terminal Preview pinned to taskbar" $Green
+                    } else {
+                        Write-ColorOutput "⚠ Taskbar pinning unavailable - please pin manually" $Yellow
+                        Write-ColorOutput "  Right-click Windows Terminal and select 'Pin to taskbar'" $Blue
+                    }
+                }
+                catch {
+                    Write-ColorOutput "⚠ Taskbar pinning restricted by Windows 11 security" $Yellow
+                    Write-ColorOutput "  Please manually pin Windows Terminal to taskbar:" $Blue
+                    Write-ColorOutput "  1. Open Start Menu and search for 'Windows Terminal'" $Blue
+                    Write-ColorOutput "  2. Right-click and select 'Pin to taskbar'" $Blue
+                    Write-Log -Message "Windows Terminal taskbar pinning failed: $_" -Level "WARNING"
                 }
             } else {
                 Write-ColorOutput "⚠ Windows Terminal Preview executable not found" $Yellow
@@ -392,6 +429,8 @@ function Pin-WindowsTerminalToTaskbar {
     }
     catch {
         Write-ColorOutput "⚠ Failed to pin Windows Terminal Preview to taskbar: $_" $Yellow
+        Write-ColorOutput "  Please manually pin Windows Terminal after installation" $Blue
+        Write-Log -Message "Windows Terminal taskbar pinning error: $_" -Level "WARNING"
     }
 }
 
@@ -594,10 +633,10 @@ function Show-Summary {
    • Windows Terminal Preview - Enhanced terminal experience (pinned to taskbar)
    • Windows Subsystem for Linux (WSL) - Linux environment with Git
    • Claude Code - AI-powered coding assistant
+   • UV - Fast Python package installer and resolver
 
 🔧 Information Systems Management:
    • 1Password - Password manager and security
-   • 1Password CLI - Command-line interface for WSL integration
    • PowerToys - Windows utilities and productivity tools
 
 🎨 Graphics Design & Media:
@@ -613,7 +652,6 @@ function Show-Summary {
 
 🎬 Media Codecs:
    • HEIF Image Extensions - Modern image format support
-   • HEVC Video Extensions - Advanced video codec support
 
 🕒 Time & Date Configuration:
    • Automatic time synchronization (NTP)
@@ -726,10 +764,10 @@ $packages = @(
     @{Id="Microsoft.WindowsTerminal.Preview"; Name="Windows Terminal Preview"; Category="Development"},
     @{Id="Microsoft.WSL"; Name="Windows Subsystem for Linux"; Category="Development"},
     @{Id="Anthropic.ClaudeCode"; Name="Claude Code"; Category="AI Assistant"},
+    @{Id="astral-sh.uv"; Name="UV"; Category="Development"},
     
     # Information Systems Management
     @{Id="AgileBits.1Password"; Name="1Password"; Category="Security"},
-    @{Id="AgileBits.1PasswordCLI"; Name="1Password CLI"; Category="Security"},
     @{Id="Microsoft.PowerToys"; Name="PowerToys"; Category="Productivity"},
     
     # Graphics Design & Media
@@ -744,8 +782,7 @@ $packages = @(
     @{Id="zen-team.zen-browser"; Name="Zen Browser"; Category="Web Browser"},
     
     # Media Codecs
-    @{Id="9PMMSR1CGPWG"; Name="HEIF Image Extensions"; Category="Media Codecs"},
-    @{Id="9N4WGH0Z6VHQ"; Name="HEVC Video Extensions"; Category="Media Codecs"}
+    @{Id="9PMMSR1CGPWG"; Name="HEIF Image Extensions"; Category="Media Codecs"}
 )
 
 # Install each package
@@ -790,33 +827,34 @@ Write-ColorOutput @"
 
 📝 Next Steps:
 1. 🔄 RESTART YOUR COMPUTER NOW (critical for WSL and system settings)
-2. After restart, open Windows Terminal to verify $selectedDistro is installed
-3. If WSL distro is not installed, run: wsl --install -d $selectedDistro
+2. After restart, open Windows Terminal to set up $selectedDistro
+3. On first launch of WSL, you'll be prompted to create a username and password
 4. Install Git in WSL: 'sudo apt update && sudo apt install git' (for Ubuntu/Debian)
 5. Configure Git with your credentials in WSL: 
    git config --global user.name "Your Name"
    git config --global user.email "your.email@example.com"
-6. Set up 1Password CLI integration with WSL
-7. Launch VS Code and Claude Code to start coding
-8. Verify time zone settings in Windows Settings if needed
-9. Check that dark theme and taskbar settings are applied correctly
+6. Launch VS Code and Claude Code to start coding
+7. Verify time zone settings in Windows Settings if needed
+8. Check that dark theme and taskbar settings are applied correctly
 
 💡 Tips:
 • Claude Code is now installed for AI-powered assistance
+• UV is available for fast Python package management
 • Pin frequently used applications to your taskbar (now auto-hiding)
+• If Windows Terminal is not pinned, right-click it and select 'Pin to taskbar'
 • Configure Windows Terminal as your default terminal
-• Use 1Password CLI for secure authentication in WSL
 • Explore PowerToys features for enhanced productivity
 • Time sync and timezone should now be automatically configured
 • Desktop is now configured with dark theme and clean taskbar layout
 • Taskbar will auto-hide - move mouse to bottom of screen to reveal
 
 💡 Configuration Summary:
-• Windows Terminal Preview has been pinned to your taskbar
+• Windows Terminal Preview installation completed
+• Manual taskbar pinning may be required (see instructions above)
 • Default terminal profile set to WSL (if available) or PowerShell
 • Time sync and timezone are now automatically configured
-• All essential development tools including Claude Code are installed
-• WSL distribution installation initiated
+• All essential development tools including Claude Code and UV are installed
+• WSL distribution installation initiated (first launch will complete setup)
 
 💡 Additional Configuration:
 • Import Windows Terminal settings if you have a backup
