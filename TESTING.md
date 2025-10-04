@@ -65,7 +65,7 @@ The script is designed to be **idempotent** - it can be run multiple times safel
 - Microsoft.VisualStudioCode
 - Microsoft.WindowsTerminal.Preview  
 - Microsoft.WSL
-- Anthropic.Claude
+- Anthropic.ClaudeCode
 
 ### Security & Productivity
 - AgileBits.1Password
@@ -73,7 +73,7 @@ The script is designed to be **idempotent** - it can be run multiple times safel
 - Microsoft.PowerToys
 
 ### Graphics Design & Media
-- GIMP.GIMP
+- 9PNSJCLXDZ0V (GIMP)
 - Inkscape.Inkscape
 - HandBrake.HandBrake
 
