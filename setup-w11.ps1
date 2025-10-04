@@ -192,12 +192,20 @@ function Show-Summary {
 }
 
 function Show-PackageSelection {
+    <#
+    .SYNOPSIS
+        Displays an interactive numbered list of packages for user selection
+    .PARAMETER Packages
+        Array of package hashtables containing Id, Name, and Category properties
+    #>
     param(
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
         [array]$Packages
     )
     
     Write-ColorOutput "`n📦 Package Selection:" $Blue
-    Write-ColorOutput "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" $Blue
+    Write-ColorOutput ("━" * 80) $Blue
     Write-ColorOutput "`nThe following packages will be installed:" $Yellow
     
     for ($i = 0; $i -lt $Packages.Length; $i++) {
@@ -212,45 +220,66 @@ function Show-PackageSelection {
 }
 
 function Get-FilteredPackages {
+    <#
+    .SYNOPSIS
+        Filters package list based on user input for removal
+    .PARAMETER Packages
+        Array of package hashtables to filter
+    .PARAMETER RemoveInput
+        Comma-separated string of package numbers to remove
+    .RETURNS
+        Filtered array of packages excluding those selected for removal
+    #>
     param(
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
         [array]$Packages,
+        
+        [Parameter(Mandatory=$false)]
+        [AllowEmptyString()]
         [string]$RemoveInput
     )
     
+    # Return all packages if input is empty
     if ([string]::IsNullOrWhiteSpace($RemoveInput)) {
         return $Packages
     }
     
-    # Parse the input - split by comma and clean up
+    # Parse comma-separated input and validate each number
     $numbersToRemove = @()
-    $inputParts = $RemoveInput -split ','
+    $inputParts = $RemoveInput -split ',' | ForEach-Object { $_.Trim() }
     
     foreach ($part in $inputParts) {
-        $trimmed = $part.Trim()
-        if ($trimmed -match '^\d+$') {
-            $number = [int]$trimmed
+        # Skip empty entries
+        if ([string]::IsNullOrWhiteSpace($part)) {
+            continue
+        }
+        
+        # Validate numeric input
+        if ($part -match '^\d+$') {
+            $number = [int]$part
             if ($number -ge 1 -and $number -le $Packages.Length) {
                 $numbersToRemove += $number
             } else {
                 Write-ColorOutput "⚠ Warning: Package number '$number' is out of range (1-$($Packages.Length))" $Yellow
             }
-        } elseif (-not [string]::IsNullOrWhiteSpace($trimmed)) {
-            Write-ColorOutput "⚠ Warning: Invalid input '$trimmed' - expected a number" $Yellow
+        } else {
+            Write-ColorOutput "⚠ Warning: Invalid input '$part' - expected a number" $Yellow
         }
     }
     
+    # Return original list if no valid numbers provided
     if ($numbersToRemove.Length -eq 0) {
         return $Packages
     }
     
-    # Remove duplicates and sort in descending order
-    $numbersToRemove = $numbersToRemove | Sort-Object -Unique -Descending
-    
-    # Create filtered package list
+    # Remove duplicates and build filtered list
+    $uniqueNumbers = $numbersToRemove | Sort-Object -Unique
     $filteredPackages = @()
+    
     for ($i = 0; $i -lt $Packages.Length; $i++) {
         $packageNumber = $i + 1
-        if ($numbersToRemove -notcontains $packageNumber) {
+        if ($uniqueNumbers -notcontains $packageNumber) {
             $filteredPackages += $Packages[$i]
         } else {
             Write-ColorOutput "✗ Removed: $($Packages[$i].Name)" $Red
