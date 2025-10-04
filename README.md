@@ -180,15 +180,82 @@ This script:
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-### Package Installation Fails
-- Ensure you have an active internet connection
-- Try running `winget source update` manually
-- Some packages may require a system restart
+### Package Installation Warnings
+
+Some packages may show warnings during installation. Here's what they mean:
+
+#### Package Not Found
+- **Issue**: Packages like "1Password CLI" or "HEVC Video Extensions" may not be available in winget
+- **Solution**: These packages are now removed from the script or can be installed manually from:
+  - Microsoft Store (for Store-exclusive packages)
+  - Official vendor websites
+  - The script will skip unavailable packages automatically
+
+#### PowerToys Installation Error
+- **Issue**: PowerToys may fail with installer error (exit code 2147942526)
+- **Possible causes**: 
+  - Previous version conflict
+  - Windows system files need repair
+  - Pending system updates
+- **Solution**:
+  1. Uninstall any existing PowerToys version
+  2. Run Windows Update and install all updates
+  3. Restart your computer
+  4. Try installing PowerToys manually from [Microsoft PowerToys GitHub](https://github.com/microsoft/PowerToys/releases)
+
+#### Package Already at Latest Version
+- **Issue**: Warning about "No available upgrade found"
+- **This is normal**: The script checks if packages are installed and tries to ensure latest version
+- **No action needed**: Package is already up-to-date
 
 ### WSL Installation Issues
+
+#### Interactive Username Prompts
+- **Issue**: WSL may try to prompt for username during script execution (now resolved)
+- **Solution**: Script now uses `--no-launch` flag to prevent this
+- **First Launch**: After restart, run `wsl -d <distro-name>` to complete username/password setup
+
+#### WSL Not Available After Installation
 - Enable "Windows Subsystem for Linux" in Windows Features
 - Restart your computer after the initial script run
-- Run `wsl --install` manually if needed
+- Run `wsl --install -d <distro-name>` manually if needed
+
+### Windows Terminal Taskbar Pinning
+
+#### Access Denied Error
+- **Issue**: Windows 11 restricts programmatic taskbar pinning for security
+- **This is a Windows limitation**: PowerShell COM automation may be blocked
+- **Solution**: Manually pin Windows Terminal:
+  1. Open Start Menu
+  2. Search for "Windows Terminal"
+  3. Right-click and select "Pin to taskbar"
+
+### Location Services and Timezone
+
+#### Automatic Timezone Not Working
+- **Issue**: Location services may need manual enabling
+- **Solution**:
+  1. Open **Settings > Privacy & Security > Location**
+  2. Enable "Location services"
+  3. Allow apps to access location
+  4. Timezone should now update automatically
+
+### Taskbar Widget Settings
+
+#### Widget Configuration Warning
+- **Issue**: Some registry settings may not apply immediately
+- **Solution**:
+  - Restart Windows Explorer: `taskkill /f /im explorer.exe && start explorer`
+  - Or restart your computer
+  - Some settings may require manual configuration in Windows Settings
+
+### Known Limitations
+
+The following cannot be fully automated due to Windows 11 security restrictions:
+- **Taskbar pinning**: Requires manual user action in most cases
+- **Location services**: Must be enabled manually by user for privacy reasons
+- **Some registry settings**: May require restart or manual confirmation
+- **Store-exclusive packages**: Cannot be installed via winget (HEVC extensions, etc.)
 
 ## 🤝 Contributing
 
