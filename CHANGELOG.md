@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.3] - 2025-10-04
+
+### Fixed
+- **Package Installation Issues** (Issue #12)
+  - Replaced Claude Desktop with Claude Code (Anthropic.ClaudeCode) as requested
+  - Fixed GIMP package ID - now uses Microsoft Store version (9PNSJCLXDZ0V) instead of GIMP.GIMP
+  - Improved WSL distribution installation with better error capture and logging
+
+### Added
+- **Error Logging System** (Issue #12)
+  - Comprehensive error logging to track installation failures
+  - Log files saved to `$env:TEMP\w11-setup-log.txt` (full log) and `$env:TEMP\w11-setup-errors.txt` (errors only)
+  - Log file paths displayed at start and end of script execution
+  - All installation errors and warnings now captured with detailed output
+  - Enhanced troubleshooting with timestamped log entries
+
+### Changed
+- **Improved Installation Experience**
+  - Enhanced error messages now include references to log files for detailed troubleshooting
+  - Better error capture in `Install-WingetPackage` function with exit code and output logging
+  - Improved `Install-WSLDistribution` function with detailed output capture
+  - All messages now automatically logged with appropriate severity levels
+  - Updated documentation to reflect Claude Code instead of Claude Desktop
+
 ## [1.3.2] - 2025-10-04
 
 ### Fixed

@@ -41,12 +41,42 @@ $Yellow = "Yellow"
 $Blue = "Cyan"
 $White = "White"
 
+# Error logging setup
+$LogFile = "$env:TEMP\w11-setup-log.txt"
+$ErrorLog = "$env:TEMP\w11-setup-errors.txt"
+
+function Write-Log {
+    param(
+        [string]$Message,
+        [string]$Level = "INFO"
+    )
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $logMessage = "[$timestamp] [$Level] $Message"
+    
+    # Write to log file
+    Add-Content -Path $LogFile -Value $logMessage -ErrorAction SilentlyContinue
+    
+    # Also write errors to separate error log
+    if ($Level -eq "ERROR" -or $Level -eq "WARNING") {
+        Add-Content -Path $ErrorLog -Value $logMessage -ErrorAction SilentlyContinue
+    }
+}
+
 function Write-ColorOutput {
     param(
         [string]$Message,
         [string]$Color = "White"
     )
     Write-Host $Message -ForegroundColor $Color
+    
+    # Also write to log file
+    $level = switch ($Color) {
+        $Red { "ERROR" }
+        $Yellow { "WARNING" }
+        $Green { "SUCCESS" }
+        default { "INFO" }
+    }
+    Write-Log -Message $Message -Level $level
 }
 
 function Test-WingetInstalled {
@@ -97,21 +127,26 @@ function Install-WingetPackage {
         }
         
         # Use additional flags for quieter installation
-        $result = winget install --id $PackageId --silent --accept-package-agreements --accept-source-agreements --disable-interactivity
+        $result = winget install --id $PackageId --silent --accept-package-agreements --accept-source-agreements --disable-interactivity 2>&1
         if ($LASTEXITCODE -eq 0) {
             if (-not $Force) {
                 Write-ColorOutput "✓ Successfully installed $Name" $Green
             }
+            Write-Log -Message "Successfully installed $Name (ID: $PackageId)" -Level "SUCCESS"
         } else {
             if (-not $Force) {
                 Write-ColorOutput "⚠ $Name installation completed with warnings" $Yellow
+                Write-ColorOutput "  See log file for details: $ErrorLog" $Yellow
             }
+            Write-Log -Message "Installation of $Name (ID: $PackageId) completed with exit code $LASTEXITCODE. Output: $result" -Level "WARNING"
         }
     }
     catch {
         if (-not $Force) {
             Write-ColorOutput "✗ Failed to install $Name : $_" $Red
+            Write-ColorOutput "  See log file for details: $ErrorLog" $Yellow
         }
+        Write-Log -Message "Failed to install $Name (ID: $PackageId): $_" -Level "ERROR"
     }
 }
 
@@ -270,6 +305,7 @@ function Install-WSLDistribution {
                 Write-ColorOutput "⚠ WSL is not yet available. A system restart may be required." $Yellow
                 Write-ColorOutput "  After restart, run: wsl --install -d $DistroName" $Yellow
             }
+            Write-Log -Message "WSL not available yet, restart required. Distribution: $DistroName" -Level "WARNING"
             return
         }
         
@@ -279,6 +315,7 @@ function Install-WSLDistribution {
             if (-not $Force) {
                 Write-ColorOutput "✓ $DistroName is already installed" $Green
             }
+            Write-Log -Message "WSL distribution $DistroName is already installed" -Level "INFO"
             return
         }
         
@@ -288,25 +325,33 @@ function Install-WSLDistribution {
             Write-ColorOutput "  • This may take several minutes..." $Yellow
         }
         
-        # Run wsl --install with the specific distro
-        $installProcess = Start-Process -FilePath "wsl" -ArgumentList "--install -d $DistroName" -Wait -NoNewWindow -PassThru
+        # Run wsl --install with the specific distro and capture output
+        $installOutput = wsl --install -d $DistroName 2>&1
+        $exitCode = $LASTEXITCODE
         
-        if ($installProcess.ExitCode -eq 0) {
+        Write-Log -Message "WSL install command for $DistroName completed with exit code: $exitCode. Output: $installOutput" -Level "INFO"
+        
+        if ($exitCode -eq 0) {
             if (-not $Force) {
                 Write-ColorOutput "✓ Successfully installed $DistroName" $Green
             }
+            Write-Log -Message "Successfully installed WSL distribution: $DistroName" -Level "SUCCESS"
         } else {
             if (-not $Force) {
                 Write-ColorOutput "⚠ $DistroName installation may require additional steps or a restart" $Yellow
                 Write-ColorOutput "  After restart, you can complete setup by running: wsl --install -d $DistroName" $Yellow
+                Write-ColorOutput "  See log file for details: $ErrorLog" $Yellow
             }
+            Write-Log -Message "WSL distribution $DistroName installation completed with warnings. Exit code: $exitCode. Output: $installOutput" -Level "WARNING"
         }
     }
     catch {
         if (-not $Force) {
             Write-ColorOutput "⚠ WSL distribution installation encountered an issue: $_" $Yellow
             Write-ColorOutput "  After restart, run: wsl --install -d $DistroName" $Yellow
+            Write-ColorOutput "  See log file for details: $ErrorLog" $Yellow
         }
+        Write-Log -Message "WSL distribution $DistroName installation error: $_" -Level "ERROR"
     }
 }
 
@@ -548,7 +593,7 @@ function Show-Summary {
    • Visual Studio Code - Modern code editor
    • Windows Terminal Preview - Enhanced terminal experience (pinned to taskbar)
    • Windows Subsystem for Linux (WSL) - Linux environment with Git
-   • Claude Desktop - AI-powered coding assistant
+   • Claude Code - AI-powered coding assistant
 
 🔧 Information Systems Management:
    • 1Password - Password manager and security
@@ -595,8 +640,25 @@ function Show-Summary {
 # Main execution starts here
 Clear-Host
 
+# Initialize log files
+if ($PSVersionTable.Platform -ne "Unix") {
+    # Clear previous logs
+    if (Test-Path $LogFile) { Remove-Item $LogFile -Force -ErrorAction SilentlyContinue }
+    if (Test-Path $ErrorLog) { Remove-Item $ErrorLog -Force -ErrorAction SilentlyContinue }
+    
+    # Create new logs
+    "Windows 11 Setup Script - Execution started at $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" | Out-File -FilePath $LogFile -Encoding UTF8
+    "Windows 11 Setup Script - Error Log" | Out-File -FilePath $ErrorLog -Encoding UTF8
+    Write-Log -Message "Script execution started" -Level "INFO"
+}
+
 if (-not $Force) {
     Show-Banner
+    if ($PSVersionTable.Platform -ne "Unix") {
+        Write-ColorOutput "`n📝 Logs will be saved to:" $Blue
+        Write-ColorOutput "   Full log: $LogFile" $White
+        Write-ColorOutput "   Error log: $ErrorLog" $White
+    }
 }
 
 # Check admin privileges upfront
@@ -663,7 +725,7 @@ $packages = @(
     @{Id="Microsoft.VisualStudioCode"; Name="Visual Studio Code"; Category="Development"},
     @{Id="Microsoft.WindowsTerminal.Preview"; Name="Windows Terminal Preview"; Category="Development"},
     @{Id="Microsoft.WSL"; Name="Windows Subsystem for Linux"; Category="Development"},
-    @{Id="Anthropic.Claude"; Name="Claude Desktop"; Category="AI Assistant"},
+    @{Id="Anthropic.ClaudeCode"; Name="Claude Code"; Category="AI Assistant"},
     
     # Information Systems Management
     @{Id="AgileBits.1Password"; Name="1Password"; Category="Security"},
@@ -671,7 +733,7 @@ $packages = @(
     @{Id="Microsoft.PowerToys"; Name="PowerToys"; Category="Productivity"},
     
     # Graphics Design & Media
-    @{Id="GIMP.GIMP"; Name="GIMP"; Category="Graphics"},
+    @{Id="9PNSJCLXDZ0V"; Name="GIMP"; Category="Graphics"},
     @{Id="Inkscape.Inkscape"; Name="Inkscape"; Category="Graphics"},
     @{Id="HandBrake.HandBrake"; Name="HandBrake"; Category="Media"},
     
@@ -717,6 +779,10 @@ Write-ColorOutput @"
 
 ✅ All packages have been processed and system configuration completed.
 
+📝 Installation Logs:
+   • Full log: $LogFile
+   • Error log: $ErrorLog
+
 ⚠️  IMPORTANT: A system restart is REQUIRED to complete installation!
    • WSL installation requires a restart to finalize
    • System settings and configurations need restart to take effect
@@ -731,12 +797,12 @@ Write-ColorOutput @"
    git config --global user.name "Your Name"
    git config --global user.email "your.email@example.com"
 6. Set up 1Password CLI integration with WSL
-7. Launch VS Code and Claude Desktop to start coding
+7. Launch VS Code and Claude Code to start coding
 8. Verify time zone settings in Windows Settings if needed
 9. Check that dark theme and taskbar settings are applied correctly
 
 💡 Tips:
-• Claude Desktop is now installed for AI-powered assistance
+• Claude Code is now installed for AI-powered assistance
 • Pin frequently used applications to your taskbar (now auto-hiding)
 • Configure Windows Terminal as your default terminal
 • Use 1Password CLI for secure authentication in WSL
@@ -749,7 +815,7 @@ Write-ColorOutput @"
 • Windows Terminal Preview has been pinned to your taskbar
 • Default terminal profile set to WSL (if available) or PowerShell
 • Time sync and timezone are now automatically configured
-• All essential development tools including Claude Desktop are installed
+• All essential development tools including Claude Code are installed
 • WSL distribution installation initiated
 
 💡 Additional Configuration:
