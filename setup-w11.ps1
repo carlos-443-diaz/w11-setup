@@ -2,11 +2,12 @@
 
 <#
 .SYNOPSIS
-    Windows 11 Setup Script for Development, IT Management, Graphics Design, Time Configuration, and Terminal Setup
+    Windows 11 Setup Script for Development, IT Management, Graphics Design, Time Configuration, and Desktop Customization, and Terminal Setup
 .DESCRIPTION
     This script performs initial setup for a new Windows 11 installation by installing
     essential software for software development, information systems management, graphics 
-    design, and configuring system time settings using winget package manager.
+    design, configuring system time settings, and customizing desktop and taskbar 
+    preferences using winget package manager.
 .PARAMETER SkipUpdates
     Skip updating winget sources before installation
 .PARAMETER Quiet
@@ -338,6 +339,109 @@ function Configure-WindowsTerminalProfile {
     }
 }
 
+function Configure-DesktopSettings {
+    Write-ColorOutput "`n🎨 Configuring desktop and theme settings..." $Blue
+    
+    try {
+        if ($PSVersionTable.Platform -eq "Unix") {
+            Write-ColorOutput "✓ [SIMULATION] Would configure desktop settings" $Green
+            return
+        }
+        
+        # Set Windows to dark theme
+        Write-ColorOutput "  • Setting Windows theme to dark mode..." $Blue
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0 -Force
+        
+        # Set taskbar to dark theme 
+        Write-ColorOutput "  • Configuring taskbar for dark theme..." $Blue
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "ColorPrevalence" -Value 0 -Force
+        
+        Write-ColorOutput "✓ Desktop theme configuration completed successfully" $Green
+    }
+    catch {
+        Write-ColorOutput "⚠ Some desktop theme settings may require manual setup: $_" $Yellow
+    }
+}
+
+function Configure-TaskbarSettings {
+    Write-ColorOutput "`n📊 Configuring taskbar settings..." $Blue
+    
+    try {
+        if ($PSVersionTable.Platform -eq "Unix") {
+            Write-ColorOutput "✓ [SIMULATION] Would configure taskbar settings" $Green
+            return
+        }
+        
+        # Create taskbar registry path if it doesn't exist
+        $taskbarPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+        if (!(Test-Path $taskbarPath)) {
+            New-Item -Path $taskbarPath -Force | Out-Null
+        }
+        
+        # Hide search box from taskbar
+        Write-ColorOutput "  • Hiding search box from taskbar..." $Blue
+        Set-ItemProperty -Path $taskbarPath -Name "SearchboxTaskbarMode" -Value 0 -Force
+        
+        # Hide task view button
+        Write-ColorOutput "  • Hiding task view button..." $Blue
+        Set-ItemProperty -Path $taskbarPath -Name "ShowTaskViewButton" -Value 0 -Force
+        
+        # Hide Copilot button (Windows 11 22H2+)
+        Write-ColorOutput "  • Hiding Copilot button..." $Blue
+        Set-ItemProperty -Path $taskbarPath -Name "ShowCopilotButton" -Value 0 -Force -ErrorAction SilentlyContinue
+        
+        # Enable taskbar auto-hide
+        Write-ColorOutput "  • Enabling taskbar auto-hide..." $Blue
+        Set-ItemProperty -Path $taskbarPath -Name "TaskbarAutoHideInDesktopMode" -Value 1 -Force
+        
+        # Remove Windows Store from taskbar (remove from pinned items)
+        Write-ColorOutput "  • Configuring taskbar pinned items..." $Blue
+        $pinnedPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband"
+        if (Test-Path $pinnedPath) {
+            # This removes the default pinned items including Store and other unwanted apps
+            Remove-ItemProperty -Path $pinnedPath -Name "Favorites" -ErrorAction SilentlyContinue
+        }
+        
+        Write-ColorOutput "✓ Taskbar configuration completed successfully" $Green
+    }
+    catch {
+        Write-ColorOutput "⚠ Some taskbar settings may require manual setup: $_" $Yellow
+    }
+}
+
+function Configure-WidgetSettings {
+    Write-ColorOutput "`n🏗️ Configuring widget settings..." $Blue
+    
+    try {
+        if ($PSVersionTable.Platform -eq "Unix") {
+            Write-ColorOutput "✓ [SIMULATION] Would configure widget settings" $Green
+            return
+        }
+        
+        # Disable widgets on taskbar
+        Write-ColorOutput "  • Configuring taskbar widgets..." $Blue
+        $widgetPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+        Set-ItemProperty -Path $widgetPath -Name "TaskbarDa" -Value 0 -Force
+        
+        # Configure weather widget to not show sports
+        Write-ColorOutput "  • Configuring widget content preferences..." $Blue
+        $weatherPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Feeds"
+        if (!(Test-Path $weatherPath)) {
+            New-Item -Path $weatherPath -Force | Out-Null
+        }
+        
+        # Disable sports content in widgets
+        Set-ItemProperty -Path $weatherPath -Name "IsFeedsAvailable" -Value 0 -Force -ErrorAction SilentlyContinue
+        Set-ItemProperty -Path $weatherPath -Name "ShellFeedsTaskbarViewMode" -Value 2 -Force -ErrorAction SilentlyContinue
+        
+        Write-ColorOutput "✓ Widget configuration completed successfully" $Green
+    }
+    catch {
+        Write-ColorOutput "⚠ Some widget settings may require manual setup: $_" $Yellow
+    }
+}
+
 function Show-Banner {
     Write-ColorOutput @"
 ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -348,7 +452,8 @@ function Show-Banner {
 ║  🎨 Graphics Design & Media Tools                                            ║
 ║  🎬 Media Codecs & Extensions                                                ║
 ║  🕒 Time & Date Configuration                                                ║
-║  ⚙️  Terminal Configuration & Taskbar Setup                                  ║
+║  🖥️  Desktop & Taskbar Customization                                         ║
+║  ⚙️  Terminal Configuration                                                  ║
 ║                                                                              ║
 ║  This script will install essential software using winget package manager    ║
 ║  and configure system settings for an optimal development environment        ║
@@ -392,6 +497,13 @@ function Show-Summary {
    • Automatic timezone detection
    • Enhanced time display format
    • Location-based timezone updates
+
+🖥️  Desktop & Taskbar Customization:
+   • Windows dark theme configuration
+   • Taskbar auto-hide enabled
+   • Search box, Task View, and Copilot removed from taskbar
+   • Widget sports content disabled
+   • Clean taskbar layout for productivity
 
 ⚙️  Terminal Configuration:
    • Windows Terminal Preview pinned to taskbar
@@ -503,6 +615,15 @@ foreach ($package in $packages) {
 # Configure time and date settings
 Configure-TimeSettings
 
+# Configure desktop and theme settings
+Configure-DesktopSettings
+
+# Configure taskbar settings
+Configure-TaskbarSettings
+
+# Configure widget settings
+Configure-WidgetSettings
+
 # Configure Windows Terminal
 Pin-WindowsTerminalToTaskbar
 Configure-WindowsTerminalProfile
@@ -524,6 +645,16 @@ Write-ColorOutput @"
 5. Set up 1Password CLI integration with WSL
 6. Launch VS Code and install your preferred extensions
 7. Verify time zone settings in Windows Settings if needed
+8. Check that dark theme and taskbar settings are applied correctly
+
+💡 Tips:
+• Pin frequently used applications to your taskbar (now auto-hiding)
+• Configure Windows Terminal as your default terminal
+• Use 1Password CLI for secure authentication in WSL
+• Explore PowerToys features for enhanced productivity
+• Time sync and timezone should now be automatically configured
+• Desktop is now configured with dark theme and clean taskbar layout
+• Taskbar will auto-hide - move mouse to bottom of screen to reveal
 
 💡 Configuration Summary:
 • Windows Terminal Preview has been pinned to your taskbar

@@ -41,9 +41,11 @@ The script will:
 5. Show installation summary
 6. Check each package and install only if not already present (idempotent)
 7. Configure time and date settings
-8. Pin Windows Terminal Preview to taskbar
-9. Configure Windows Terminal default profile (WSL or PowerShell)
-10. Display completion message with next steps
+8. Configure desktop theme and appearance
+9. Configure taskbar settings and layout
+10. Configure widget and feed preferences
+11. Pin Windows Terminal Preview to taskbar
+12. Configure Windows Terminal default profile (WSL or PowerShell)
 
 ## Re-running the Script
 
@@ -51,6 +53,7 @@ The script is designed to be **idempotent** - it can be run multiple times safel
 - Check if each package is already installed
 - Skip installation for existing packages
 - Only install missing packages
+- Reconfigure desktop and system settings if needed
 - Reconfigure time settings if needed
 - Re-pin Windows Terminal to taskbar if needed
 - Update Windows Terminal profile configuration
@@ -87,6 +90,13 @@ The script is designed to be **idempotent** - it can be run multiple times safel
 - Automatic timezone detection
 - Enhanced time display format (24-hour with seconds)
 - Location-based timezone configuration
+
+### Desktop & Taskbar Customization
+- Windows 11 dark theme configuration
+- Taskbar auto-hide functionality
+- Clean taskbar layout (search box, task view, Copilot removed)
+- Widget configuration (sports content disabled)
+- Optimized desktop layout for development
 
 ### Terminal Configuration
 - Windows Terminal Preview pinned to taskbar

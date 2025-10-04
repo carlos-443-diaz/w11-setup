@@ -19,6 +19,21 @@ All notable changes to this project will be documented in this file.
 ## [1.3.0] - 2025-09-30
 
 ### Added
+- **Desktop & Taskbar Customization** - Comprehensive desktop personalization
+  - Automatic dark theme configuration for Windows 11
+  - Taskbar auto-hide functionality for maximized screen space
+  - Clean taskbar layout with removal of search box, task view, and Copilot buttons
+  - Widget configuration to disable sports content and unnecessary widgets
+  - Streamlined interface optimized for development productivity
+- **Enhanced User Experience**
+  - Updated script banner to include desktop customization
+  - Enhanced completion message with desktop configuration guidance
+  - Comprehensive post-installation verification steps for all settings
+- **Registry-based Configuration** - Professional system customization
+  - SystemUsesLightTheme and AppsUseLightTheme registry settings for dark theme
+  - TaskbarAutoHideInDesktopMode for auto-hiding taskbar
+  - SearchboxTaskbarMode, ShowTaskViewButton, and ShowCopilotButton for clean taskbar
+  - Widget and feed configuration through registry modifications
 - **Windows Terminal Configuration** - Automated terminal setup and optimization
   - Automatically pins Windows Terminal Preview to taskbar for easy access
   - Smart default profile configuration (WSL if available, PowerShell as fallback)
@@ -26,9 +41,13 @@ All notable changes to this project will be documented in this file.
   - Enhanced user experience with automated terminal workflow setup
 
 ### Changed
+- Updated script description to include desktop customization and theme configuration
 - Updated script banner and description to include terminal configuration
+- Enhanced README.md with detailed desktop and taskbar customization documentation
 - Enhanced installation summary to highlight terminal optimization features
+- Improved post-installation guidance with system verification steps
 - Improved completion message with terminal-specific configuration notes
+- Expanded completion message to include desktop configuration tips
 - Updated next steps guidance to reflect automated terminal setup
 
 ## [1.2.0] - 2025-09-30
