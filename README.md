@@ -1,6 +1,6 @@
 # Windows 11 Setup Script
 
-A comprehensive PowerShell script for setting up a new Windows 11 installation with essential software for **software development**, **information systems management**, **graphics design**, and **system time configuration**.
+A comprehensive PowerShell script for setting up a new Windows 11 installation with essential software for **software development**, **information systems management**, **graphics design**, **system time configuration**, and **desktop customization**.
 
 ## 🚀 Quick Start
 
@@ -23,7 +23,7 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 
 ### 🛠️ Software Development
 - **Visual Studio Code** - Modern code editor with extensive extensions
-- **Windows Terminal Preview** - Enhanced terminal with tabs and customization
+- **Windows Terminal Preview** - Enhanced terminal with tabs and customization (auto-pinned to taskbar)
 - **Windows Subsystem for Linux (WSL)** - Run Linux environments with Git
 
 ### 🔧 Information Systems Management
@@ -40,6 +40,7 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 - **7-Zip** - File archiver for various formats
 - **VLC Media Player** - Versatile media player
 - **Firefox** - Privacy-focused web browser
+- **Zen Browser** - Privacy-focused web browser with enhanced features
 
 ### 🎬 Media Codecs
 - **HEIF Image Extensions** - Support for modern HEIF/HEIC image formats
@@ -51,55 +52,57 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 - **Enhanced Time Format** - 24-hour format with seconds display
 - **Location Services** - Enables location-based timezone updates
 
+### 🖥️ Desktop & Taskbar Customization
+- **Dark Theme** - Configures Windows 11 to use dark theme system-wide
+- **Taskbar Auto-Hide** - Enables automatic taskbar hiding for more screen space
+- **Clean Taskbar Layout** - Removes search box, task view, and Copilot buttons
+- **Widget Configuration** - Disables sports content and unnecessary widgets
+- **Optimized for Productivity** - Streamlined interface for development work
+
+### ⚙️ Terminal Configuration
+- **Windows Terminal Preview** - Automatically pinned to taskbar for easy access
+- **Smart Default Profile** - WSL (if available) or PowerShell as fallback
+- **Development Optimized** - Ready for immediate development workflow
+
 ## ⚡ Script Options
 
 ```powershell
 # Run silently without prompts
 .\setup-w11.ps1 -Quiet
 
+# Run completely silent (no output, no prompts)
+.\setup-w11.ps1 -Force
+
 # Skip winget source updates
 .\setup-w11.ps1 -SkipUpdates
 
-# Combine options
-.\setup-w11.ps1 -Quiet -SkipUpdates
+# Specify WSL Linux distribution
+.\setup-w11.ps1 -WSLDistro "Ubuntu-22.04"
+
+# Combine options for fully automated installation
+.\setup-w11.ps1 -Force -SkipUpdates -WSLDistro "Debian"
+
+# Interactive mode with WSL distribution selection (default)
+.\setup-w11.ps1
 ```
 
-## 📦 Package Customization
+### Parameter Details
 
-**NEW**: The script now allows you to customize which packages to install:
+- **`-Quiet`** - Suppresses interactive prompts but shows installation progress
+- **`-Force`** - Completely silent execution with no prompts or progress output
+- **`-SkipUpdates`** - Skips updating winget sources before installation
+- **`-WSLDistro`** - Specifies the Linux distribution for WSL (default: Ubuntu)
 
-1. **Interactive Mode** (default): The script will show you a numbered list of all packages and let you remove unwanted ones
-2. **Quiet Mode** (`-Quiet`): Installs all packages without prompts
+### Available WSL Distributions
 
-### How to Remove Packages
-When running interactively, you'll see a list like this:
-```
-📦 Package Selection:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-The following packages will be installed:
-   1. Visual Studio Code - Microsoft.VisualStudioCode (Development)
-   2. Windows Terminal Preview - Microsoft.WindowsTerminal.Preview (Development)
-   3. Windows Subsystem for Linux - Microsoft.WSL (Development)
-   4. 1Password - AgileBits.1Password (Security)
-   5. 1Password CLI - AgileBits.1PasswordCLI (Security)
-   6. PowerToys - Microsoft.PowerToys (Productivity)
-   7. GIMP - GIMP.GIMP (Graphics)
-   8. Inkscape - Inkscape.Inkscape (Graphics)
-   9. HandBrake - HandBrake.HandBrake (Media)
-  10. 7-Zip - 7zip.7zip (Utilities)
-  11. VLC Media Player - VideoLAN.VLC (Media)
-  12. Firefox - Mozilla.Firefox (Web Browser)
-  13. HEIF Image Extensions - 9PMMSR1CGPWG (Media Codecs)
-  14. HEVC Video Extensions - 9N4WGH0Z6VHQ (Media Codecs)
-```
-
-**To remove packages**: Enter their numbers separated by commas
-- Example: `7,9,14` removes GIMP, HandBrake, and HEVC Video Extensions
-- Example: `1,2,3` removes all Development tools
-- **Press Enter** to install all packages
-
-**Input validation**: Invalid numbers and out-of-range values are ignored with warnings.
+When running interactively, you can choose from:
+- **Ubuntu** (default) - Most popular, great for beginners
+- **Ubuntu-22.04** - Long-term support version
+- **Ubuntu-20.04** - Older LTS version  
+- **Debian** - Stable and lightweight
+- **kali-linux** - Security and penetration testing
+- **openSUSE-Leap-15.5** - Enterprise-ready
+- **Alpine** - Minimal and security-focused
 
 ## 📋 Prerequisites
 
@@ -144,14 +147,27 @@ git config --global user.email "your.email@example.com"
 - **Remote - WSL** - Develop in WSL environments
 
 ### 5. Windows Terminal Configuration
-- Set as default terminal: Settings > Startup > Default terminal application
-- Customize themes and profiles for different shells
+- **Automatically configured** - Terminal is already pinned to taskbar with optimal default profile
+- **Default profile** - Set to WSL (if available) or PowerShell as fallback
+- **Optional customization** - Adjust themes and additional profiles in Settings as needed
 
-### 6. Verify Time Configuration
-- Check time zone in **Settings > Time & Language > Date & Time**
-- Ensure "Set time automatically" and "Set time zone automatically" are enabled
-- Time format should display as 24-hour with seconds (HH:mm:ss)
-- If timezone is incorrect, manually select the correct one
+### 6. Verify System Configuration
+- **Time Settings**: Check time zone in **Settings > Time & Language > Date & Time**
+  - Ensure "Set time automatically" and "Set time zone automatically" are enabled
+  - Time format should display as 24-hour with seconds (HH:mm:ss)
+  - If timezone is incorrect, manually select the correct one
+- **Desktop Theme**: Verify dark theme is applied in **Settings > Personalization > Colors**
+  - Choose "Dark" mode for better visual consistency
+- **Taskbar Settings**: Check taskbar configuration in **Settings > Personalization > Taskbar**
+  - Taskbar should auto-hide (move mouse to bottom to reveal)
+  - Search, Task view, and widget buttons should be hidden
+  - Verify clean, minimal taskbar layout
+
+### 7. Additional Customizations (Optional)
+- **PowerToys Configuration**: Launch PowerToys and configure FancyZones for window management
+- **Terminal Themes**: Customize Windows Terminal with your preferred color scheme
+- **VS Code Theme**: Install a dark theme extension if desired (e.g., One Dark Pro)
+- **Taskbar Icons**: Pin your most-used applications to the auto-hiding taskbar
 
 ## 🛡️ Security & Privacy
 

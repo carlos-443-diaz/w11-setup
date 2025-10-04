@@ -6,17 +6,23 @@ This document explains how to test the Windows 11 setup script.
 
 On Windows 11 with PowerShell as Administrator:
 ```powershell
-# Test with prompts
+# Test with prompts (interactive mode)
 .\setup-w11.ps1
 
-# Test silently (no prompts)
+# Test silently (minimal prompts)
 .\setup-w11.ps1 -Quiet
+
+# Test completely silent (no output)
+.\setup-w11.ps1 -Force
 
 # Test without updating winget sources
 .\setup-w11.ps1 -SkipUpdates
 
-# Test both options
-.\setup-w11.ps1 -Quiet -SkipUpdates
+# Test with specific WSL distribution
+.\setup-w11.ps1 -WSLDistro "Ubuntu-22.04"
+
+# Test fully automated installation
+.\setup-w11.ps1 -Force -SkipUpdates -WSLDistro "Debian"
 ```
 
 ## Direct Download and Run
@@ -33,36 +39,13 @@ The script will:
 3. Verify winget is installed
 4. Update winget sources (unless -SkipUpdates is used)
 5. Show installation summary
-6. **NEW**: Show package selection (unless -Quiet is used)
-7. Allow user to remove unwanted packages by number
-8. Check each package and install only if not already present (idempotent)
-9. Configure time and date settings
-10. Display completion message with next steps
-
-## Package Selection Feature
-
-**NEW in v1.3.0**: The script now includes interactive package selection:
-
-### Testing Package Selection
-When running interactively (without `-Quiet`), the script will:
-1. Display a numbered list of all packages
-2. Prompt for packages to remove (comma-separated numbers)
-3. Validate input and show warnings for invalid entries
-4. Display final package list before installation
-
-### Examples to Test
-```powershell
-# Test interactive mode with package removal
-.\setup-w11.ps1
-# When prompted, try: "7,9,14" to remove GIMP, HandBrake, HEVC Extensions
-
-# Test with invalid input
-.\setup-w11.ps1
-# When prompted, try: "0,15,abc" to see error handling
-
-# Test quiet mode (skips package selection)
-.\setup-w11.ps1 -Quiet
-```
+6. Check each package and install only if not already present (idempotent)
+7. Configure time and date settings
+8. Configure desktop theme and appearance
+9. Configure taskbar settings and layout
+10. Configure widget and feed preferences
+11. Pin Windows Terminal Preview to taskbar
+12. Configure Windows Terminal default profile (WSL or PowerShell)
 
 ## Re-running the Script
 
@@ -70,7 +53,10 @@ The script is designed to be **idempotent** - it can be run multiple times safel
 - Check if each package is already installed
 - Skip installation for existing packages
 - Only install missing packages
+- Reconfigure desktop and system settings if needed
 - Reconfigure time settings if needed
+- Re-pin Windows Terminal to taskbar if needed
+- Update Windows Terminal profile configuration
 
 ## Package Categories Installed
 
@@ -93,6 +79,7 @@ The script is designed to be **idempotent** - it can be run multiple times safel
 - 7zip.7zip
 - VideoLAN.VLC
 - Mozilla.Firefox
+- zen-team.zen-browser
 
 ### Media Codecs
 - 9PMMSR1CGPWG (HEIF Image Extensions)
@@ -103,6 +90,18 @@ The script is designed to be **idempotent** - it can be run multiple times safel
 - Automatic timezone detection
 - Enhanced time display format (24-hour with seconds)
 - Location-based timezone configuration
+
+### Desktop & Taskbar Customization
+- Windows 11 dark theme configuration
+- Taskbar auto-hide functionality
+- Clean taskbar layout (search box, task view, Copilot removed)
+- Widget configuration (sports content disabled)
+- Optimized desktop layout for development
+
+### Terminal Configuration
+- Windows Terminal Preview pinned to taskbar
+- Default profile set to WSL (if available) or PowerShell
+- Optimized for development workflow
 
 ## Troubleshooting
 
