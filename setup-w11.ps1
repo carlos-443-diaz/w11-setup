@@ -39,6 +39,7 @@ $Red = "Red"
 $Green = "Green"
 $Yellow = "Yellow"
 $Blue = "Cyan"
+$White = "White"
 
 function Write-ColorOutput {
     param(
@@ -245,6 +246,70 @@ function Test-WSLInstalled {
     }
 }
 
+function Install-WSLDistribution {
+    param(
+        [string]$DistroName
+    )
+    
+    if (-not $Force) {
+        Write-ColorOutput "`n🐧 Installing WSL distribution: $DistroName..." $Blue
+    }
+    
+    try {
+        if ($PSVersionTable.Platform -eq "Unix") {
+            if (-not $Force) {
+                Write-ColorOutput "✓ [SIMULATION] Would install WSL distribution: $DistroName" $Green
+            }
+            return
+        }
+        
+        # Check if WSL is installed
+        $wslVersion = wsl --version 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            if (-not $Force) {
+                Write-ColorOutput "⚠ WSL is not yet available. A system restart may be required." $Yellow
+                Write-ColorOutput "  After restart, run: wsl --install -d $DistroName" $Yellow
+            }
+            return
+        }
+        
+        # Check if the distribution is already installed
+        $installedDistros = wsl --list --quiet 2>$null
+        if ($LASTEXITCODE -eq 0 -and $installedDistros -match $DistroName) {
+            if (-not $Force) {
+                Write-ColorOutput "✓ $DistroName is already installed" $Green
+            }
+            return
+        }
+        
+        # Install the distribution
+        if (-not $Force) {
+            Write-ColorOutput "  • Installing $DistroName distribution..." $Blue
+            Write-ColorOutput "  • This may take several minutes..." $Yellow
+        }
+        
+        # Run wsl --install with the specific distro
+        $installProcess = Start-Process -FilePath "wsl" -ArgumentList "--install -d $DistroName" -Wait -NoNewWindow -PassThru
+        
+        if ($installProcess.ExitCode -eq 0) {
+            if (-not $Force) {
+                Write-ColorOutput "✓ Successfully installed $DistroName" $Green
+            }
+        } else {
+            if (-not $Force) {
+                Write-ColorOutput "⚠ $DistroName installation may require additional steps or a restart" $Yellow
+                Write-ColorOutput "  After restart, you can complete setup by running: wsl --install -d $DistroName" $Yellow
+            }
+        }
+    }
+    catch {
+        if (-not $Force) {
+            Write-ColorOutput "⚠ WSL distribution installation encountered an issue: $_" $Yellow
+            Write-ColorOutput "  After restart, run: wsl --install -d $DistroName" $Yellow
+        }
+    }
+}
+
 function Pin-WindowsTerminalToTaskbar {
     Write-ColorOutput "`n📌 Pinning Windows Terminal Preview to taskbar..." $Blue
     
@@ -422,7 +487,19 @@ function Configure-WidgetSettings {
         # Disable widgets on taskbar
         Write-ColorOutput "  • Configuring taskbar widgets..." $Blue
         $widgetPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-        Set-ItemProperty -Path $widgetPath -Name "TaskbarDa" -Value 0 -Force
+        
+        # Create the path if it doesn't exist
+        if (!(Test-Path $widgetPath)) {
+            New-Item -Path $widgetPath -Force | Out-Null
+        }
+        
+        # Try to set TaskbarDa with better error handling
+        try {
+            Set-ItemProperty -Path $widgetPath -Name "TaskbarDa" -Value 0 -Force -ErrorAction Stop
+        }
+        catch {
+            Write-ColorOutput "  • Taskbar widget setting may require manual configuration" $Yellow
+        }
         
         # Configure weather widget to not show sports
         Write-ColorOutput "  • Configuring widget content preferences..." $Blue
@@ -471,6 +548,7 @@ function Show-Summary {
    • Visual Studio Code - Modern code editor
    • Windows Terminal Preview - Enhanced terminal experience (pinned to taskbar)
    • Windows Subsystem for Linux (WSL) - Linux environment with Git
+   • Claude Desktop - AI-powered coding assistant
 
 🔧 Information Systems Management:
    • 1Password - Password manager and security
@@ -585,6 +663,7 @@ $packages = @(
     @{Id="Microsoft.VisualStudioCode"; Name="Visual Studio Code"; Category="Development"},
     @{Id="Microsoft.WindowsTerminal.Preview"; Name="Windows Terminal Preview"; Category="Development"},
     @{Id="Microsoft.WSL"; Name="Windows Subsystem for Linux"; Category="Development"},
+    @{Id="Anthropic.Claude"; Name="Claude Desktop"; Category="AI Assistant"},
     
     # Information Systems Management
     @{Id="AgileBits.1Password"; Name="1Password"; Category="Security"},
@@ -612,6 +691,9 @@ foreach ($package in $packages) {
     Install-WingetPackage -PackageId $package.Id -Name $package.Name -Category $package.Category
 }
 
+# Install WSL distribution after WSL package is installed
+Install-WSLDistribution -DistroName $selectedDistro
+
 # Configure time and date settings
 Configure-TimeSettings
 
@@ -633,21 +715,28 @@ Write-ColorOutput @"
 🎉 Installation Complete!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-✅ All packages have been processed and system configuration completed. Some applications may require a restart.
+✅ All packages have been processed and system configuration completed.
+
+⚠️  IMPORTANT: A system restart is REQUIRED to complete installation!
+   • WSL installation requires a restart to finalize
+   • System settings and configurations need restart to take effect
+   • Several applications may not function properly until restart
 
 📝 Next Steps:
-1. Restart your computer to complete WSL installation and apply time settings
-2. Open Windows Terminal and run 'wsl --install -d $selectedDistro' to set up $selectedDistro Linux
-3. Install Git in WSL: 'sudo apt update && sudo apt install git' (for Ubuntu/Debian) or equivalent for your distro
-4. Configure Git with your credentials in WSL: 
+1. 🔄 RESTART YOUR COMPUTER NOW (critical for WSL and system settings)
+2. After restart, open Windows Terminal to verify $selectedDistro is installed
+3. If WSL distro is not installed, run: wsl --install -d $selectedDistro
+4. Install Git in WSL: 'sudo apt update && sudo apt install git' (for Ubuntu/Debian)
+5. Configure Git with your credentials in WSL: 
    git config --global user.name "Your Name"
    git config --global user.email "your.email@example.com"
-5. Set up 1Password CLI integration with WSL
-6. Launch VS Code and install your preferred extensions
-7. Verify time zone settings in Windows Settings if needed
-8. Check that dark theme and taskbar settings are applied correctly
+6. Set up 1Password CLI integration with WSL
+7. Launch VS Code and Claude Desktop to start coding
+8. Verify time zone settings in Windows Settings if needed
+9. Check that dark theme and taskbar settings are applied correctly
 
 💡 Tips:
+• Claude Desktop is now installed for AI-powered assistance
 • Pin frequently used applications to your taskbar (now auto-hiding)
 • Configure Windows Terminal as your default terminal
 • Use 1Password CLI for secure authentication in WSL
@@ -660,13 +749,15 @@ Write-ColorOutput @"
 • Windows Terminal Preview has been pinned to your taskbar
 • Default terminal profile set to WSL (if available) or PowerShell
 • Time sync and timezone are now automatically configured
-• All essential development tools are installed
+• All essential development tools including Claude Desktop are installed
+• WSL distribution installation initiated
 
-💡 Additional Tips:
-• Use Windows Terminal for all your command-line work
-• Configure Windows Terminal themes and appearance in Settings
-• Use 1Password CLI for secure authentication in WSL
-• Explore PowerToys features for enhanced productivity
+💡 Additional Configuration:
+• Import Windows Terminal settings if you have a backup
+• Configure PowerToys keyboard shortcuts and utilities
+• Set up 1Password browser extensions in Firefox and Zen Browser
+
+🔄 Remember: Restart your computer to complete the installation!
 
 Happy coding! 🚀
 "@ $Green

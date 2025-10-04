@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.2] - 2025-10-04
+
+### Fixed
+- **Critical Bug Fixes** (Issue #8)
+  - Fixed Write-Host color binding error by adding missing `$White` color variable
+  - Fixed widget configuration permission errors with improved error handling and path creation
+  - Fixed WSL distribution installation - now properly installs selected Linux distro after WSL package installation
+  - Added `Install-WSLDistribution` function to handle distro installation with proper error recovery
+
+### Added
+- **Claude Desktop** - AI-powered coding assistant
+  - Added Anthropic.Claude package to development tools
+  - Updated installation summary to include Claude Desktop
+  - Enhanced post-installation guidance for AI assistance
+
+### Changed
+- **Improved Installation Experience**
+  - Enhanced completion message with stronger emphasis on restart requirement
+  - Improved error handling for registry operations in widget configuration
+  - Better post-installation instructions with clearer restart requirements
+  - Updated next steps to include Claude Desktop launch
+  - Added recommendations for Windows Terminal settings import and PowerToys configuration
+
 ## [1.3.1] - 2025-09-30
 
 ### Added
