@@ -1,0 +1,92 @@
+name: Script Validation
+
+on:
+  pull_request:
+    paths:
+      - '**.ps1'
+  push:
+    branches:
+      - main
+    paths:
+      - '**.ps1'
+
+jobs:
+  validate-powershell:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install PowerShell
+        run: |
+          # Update package list
+          sudo apt-get update
+          
+          # Install PowerShell
+          wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb
+          sudo dpkg -i packages-microsoft-prod.deb
+          sudo apt-get update
+          sudo apt-get install -y powershell
+      
+      - name: Validate PowerShell Syntax
+        run: |
+          echo "Validating PowerShell script syntax..."
+          pwsh -Command {
+            $ErrorActionPreference = 'Stop'
+            
+            # Find all PowerShell files
+            $psFiles = Get-ChildItem -Path . -Filter "*.ps1" -Recurse
+            
+            $errors = @()
+            foreach ($file in $psFiles) {
+              Write-Host "Checking: $($file.FullName)"
+              
+              # Parse the script to check for syntax errors
+              $tokens = $null
+              $parseErrors = $null
+              $null = [System.Management.Automation.PSParser]::Tokenize(
+                (Get-Content -Path $file.FullName -Raw),
+                [ref]$tokens,
+                [ref]$parseErrors
+              )
+              
+              if ($parseErrors) {
+                $errors += "File: $($file.Name)"
+                $errors += $parseErrors | ForEach-Object { "  Line $($_.Token.StartLine): $($_.Message)" }
+              } else {
+                Write-Host "  ✓ No syntax errors" -ForegroundColor Green
+              }
+            }
+            
+            if ($errors.Count -gt 0) {
+              Write-Host "`n❌ Syntax errors found:" -ForegroundColor Red
+              $errors | ForEach-Object { Write-Host $_ -ForegroundColor Red }
+              exit 1
+            } else {
+              Write-Host "`n✅ All PowerShell scripts are valid" -ForegroundColor Green
+            }
+          }
+      
+      - name: Check script parameters
+        run: |
+          echo "Checking setup-w11.ps1 parameters..."
+          pwsh -Command {
+            $content = Get-Content setup-w11.ps1 -Raw
+            
+            # Check for required documentation
+            if ($content -match '\.SYNOPSIS' -and 
+                $content -match '\.DESCRIPTION' -and 
+                $content -match '\.PARAMETER') {
+              Write-Host "✓ Script has proper documentation" -ForegroundColor Green
+            } else {
+              Write-Host "⚠️  Script documentation incomplete" -ForegroundColor Yellow
+            }
+            
+            # Check for #Requires statements
+            if ($content -match '#Requires -RunAsAdministrator') {
+              Write-Host "✓ Administrator requirement is documented" -ForegroundColor Green
+            } else {
+              Write-Host "⚠️  Administrator requirement not documented" -ForegroundColor Yellow
+            }
+          }

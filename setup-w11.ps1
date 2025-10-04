@@ -16,6 +16,8 @@
     Force installation without any user prompts (combines with Quiet for fully automated execution)
 .PARAMETER WSLDistro
     Specify the WSL Linux distribution to install (default: Ubuntu)
+.PARAMETER DevMode
+    Enable development mode with verbose logging and detailed debugging output
 .NOTES
     Author: Carlos Diaz
     Requires: Windows 11, Administrator privileges, winget package manager
@@ -25,7 +27,8 @@ param(
     [switch]$SkipUpdates,
     [switch]$Quiet,
     [switch]$Force,
-    [string]$WSLDistro = "Ubuntu"
+    [string]$WSLDistro = "Ubuntu",
+    [switch]$DevMode
 )
 
 # Set execution policy and error handling
@@ -59,6 +62,11 @@ function Write-Log {
     # Also write errors to separate error log
     if ($Level -eq "ERROR" -or $Level -eq "WARNING") {
         Add-Content -Path $ErrorLog -Value $logMessage -ErrorAction SilentlyContinue
+    }
+    
+    # In DevMode, output to console as well
+    if ($DevMode -and $Level -eq "DEBUG") {
+        Write-Host "  [DEBUG] $Message" -ForegroundColor DarkGray
     }
 }
 
@@ -106,6 +114,8 @@ function Install-WingetPackage {
         Write-ColorOutput "`n📦 Checking $Name ($Category)..." $Blue
     }
     
+    Write-Log -Message "Starting installation check for $Name (ID: $PackageId, Category: $Category)" -Level "DEBUG"
+    
     try {
         if ($PSVersionTable.Platform -eq "Unix") {
             Write-ColorOutput "✓ [SIMULATION] Would check and install $Name" $Green
@@ -114,6 +124,7 @@ function Install-WingetPackage {
         }
         
         # Check if package is already installed
+        Write-Log -Message "Checking if $Name is already installed..." -Level "DEBUG"
         $installed = winget list --id $PackageId --exact 2>$null
         if ($LASTEXITCODE -eq 0 -and $installed -match $PackageId) {
             if (-not $Force) {
@@ -128,8 +139,11 @@ function Install-WingetPackage {
         }
         
         # Use additional flags for quieter installation
+        Write-Log -Message "Running winget install for $Name with ID: $PackageId" -Level "DEBUG"
         $result = winget install --id $PackageId --silent --accept-package-agreements --accept-source-agreements --disable-interactivity 2>&1
         $exitCode = $LASTEXITCODE
+        
+        Write-Log -Message "Winget install for $Name completed with exit code: $exitCode" -Level "DEBUG"
         
         # Check for specific error codes
         if ($exitCode -eq 0) {
@@ -160,6 +174,12 @@ function Install-WingetPackage {
     }
     catch {
         if (-not $Force) {
+            Write-ColorOutput "✗ Failed to install $Name : $_" $Red
+            Write-ColorOutput "  See log file for details: $ErrorLog" $Yellow
+        }
+        Write-Log -Message "Failed to install $Name (ID: $PackageId): $_" -Level "ERROR"
+    }
+}
             Write-ColorOutput "✗ Failed to install $Name : $_" $Red
             Write-ColorOutput "  See log file for details: $ErrorLog" $Yellow
         }
@@ -240,15 +260,11 @@ function Configure-TimeSettings {
         try {
             $locationConsent = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}" -Name "Value" -ErrorAction SilentlyContinue
             if ($locationConsent.Value -ne "Allow") {
-                if (-not $Force) {
-                    Write-ColorOutput "  • Location services may need manual enabling for automatic timezone" $Yellow
-                }
+                Write-Log -Message "Location services not enabled - manual configuration may be needed for automatic timezone" -Level "INFO"
             }
         }
         catch {
-            if (-not $Force) {
-                Write-ColorOutput "  • Location settings configuration skipped" $Yellow
-            }
+            Write-Log -Message "Could not check location services status" -Level "DEBUG"
         }
         
         # Configure NTP client for more accurate time sync
@@ -307,6 +323,8 @@ function Install-WSLDistribution {
         Write-ColorOutput "`n🐧 Installing WSL distribution: $DistroName..." $Blue
     }
     
+    Write-Log -Message "Starting WSL distribution installation for: $DistroName" -Level "DEBUG"
+    
     try {
         if ($PSVersionTable.Platform -eq "Unix") {
             if (-not $Force) {
@@ -316,6 +334,7 @@ function Install-WSLDistribution {
         }
         
         # Check if WSL is installed
+        Write-Log -Message "Checking WSL availability..." -Level "DEBUG"
         $wslVersion = wsl --version 2>$null
         if ($LASTEXITCODE -ne 0) {
             if (-not $Force) {
@@ -326,7 +345,10 @@ function Install-WSLDistribution {
             return
         }
         
+        Write-Log -Message "WSL is available. Version info: $wslVersion" -Level "DEBUG"
+        
         # Check if the distribution is already installed
+        Write-Log -Message "Checking if $DistroName is already installed..." -Level "DEBUG"
         $installedDistros = wsl --list --quiet 2>$null
         if ($LASTEXITCODE -eq 0 -and $installedDistros -match $DistroName) {
             if (-not $Force) {
@@ -338,10 +360,11 @@ function Install-WSLDistribution {
         
         # Install the distribution with --no-launch to avoid interactive prompts
         if (-not $Force) {
-            Write-ColorOutput "  • Installing $DistroName distribution..." $Blue
-            Write-ColorOutput "  • This may take several minutes..." $Yellow
-            Write-ColorOutput "  • Note: First launch will require setting up a username and password" $Yellow
+            Write-ColorOutput "  • Attempting to install $DistroName distribution..." $Blue
+            Write-ColorOutput "  • This may take several minutes depending on your connection..." $Yellow
         }
+        
+        Write-Log -Message "Running: wsl --install -d $DistroName --no-launch" -Level "DEBUG"
         
         # Run wsl --install with the specific distro using --no-launch to avoid interactive setup
         $installOutput = wsl --install -d $DistroName --no-launch 2>&1
@@ -351,24 +374,36 @@ function Install-WSLDistribution {
         
         if ($exitCode -eq 0) {
             if (-not $Force) {
-                Write-ColorOutput "✓ Successfully downloaded $DistroName" $Green
+                Write-ColorOutput "✓ Successfully installed $DistroName distribution" $Green
                 Write-ColorOutput "  • First launch will prompt for username and password setup" $Blue
                 Write-ColorOutput "  • Run 'wsl -d $DistroName' after restart to complete setup" $Blue
             }
             Write-Log -Message "Successfully installed WSL distribution: $DistroName (first launch required)" -Level "SUCCESS"
         } else {
-            if (-not $Force) {
-                Write-ColorOutput "⚠ $DistroName installation may require additional steps or a restart" $Yellow
-                Write-ColorOutput "  After restart, you can complete setup by running: wsl --install -d $DistroName" $Yellow
-                Write-ColorOutput "  See log file for details: $ErrorLog" $Yellow
+            # Try to provide more specific feedback based on exit code or output
+            if ($installOutput -match "not found" -or $installOutput -match "Unable to find") {
+                if (-not $Force) {
+                    Write-ColorOutput "✗ Distribution '$DistroName' not found in available WSL distributions" $Red
+                    Write-ColorOutput "  Try running 'wsl --list --online' to see available distributions" $Yellow
+                    Write-ColorOutput "  You can install manually after restart: wsl --install -d <distro-name>" $Yellow
+                }
+                Write-Log -Message "Distribution $DistroName not found. Exit code: $exitCode. Output: $installOutput" -Level "ERROR"
+            } else {
+                if (-not $Force) {
+                    Write-ColorOutput "⚠ Attempted to install $DistroName, but encountered issues (exit code: $exitCode)" $Yellow
+                    Write-ColorOutput "  This may be due to network connectivity or distribution availability" $Yellow
+                    Write-ColorOutput "  After restart, try: wsl --install -d $DistroName" $Yellow
+                    Write-ColorOutput "  Or run 'wsl --list --online' to see available distributions" $Yellow
+                    Write-ColorOutput "  See log file for details: $ErrorLog" $Yellow
+                }
+                Write-Log -Message "WSL distribution $DistroName installation completed with warnings. Exit code: $exitCode. Output: $installOutput" -Level "WARNING"
             }
-            Write-Log -Message "WSL distribution $DistroName installation completed with warnings. Exit code: $exitCode. Output: $installOutput" -Level "WARNING"
         }
     }
     catch {
         if (-not $Force) {
-            Write-ColorOutput "⚠ WSL distribution installation encountered an issue: $_" $Yellow
-            Write-ColorOutput "  After restart, run: wsl --install -d $DistroName" $Yellow
+            Write-ColorOutput "✗ WSL distribution installation encountered an error: $_" $Red
+            Write-ColorOutput "  After restart, try manually: wsl --install -d $DistroName" $Yellow
             Write-ColorOutput "  See log file for details: $ErrorLog" $Yellow
         }
         Write-Log -Message "WSL distribution $DistroName installation error: $_" -Level "ERROR"
@@ -632,7 +667,7 @@ function Show-Summary {
    • Visual Studio Code - Modern code editor
    • Windows Terminal Preview - Enhanced terminal experience (pinned to taskbar)
    • Windows Subsystem for Linux (WSL) - Linux environment with Git
-   • Claude Code - AI-powered coding assistant
+   • Claude Desktop - AI-powered coding assistant
    • UV - Fast Python package installer and resolver
 
 🔧 Information Systems Management:
@@ -697,6 +732,12 @@ if (-not $Force) {
         Write-ColorOutput "   Full log: $LogFile" $White
         Write-ColorOutput "   Error log: $ErrorLog" $White
     }
+    if ($DevMode) {
+        Write-ColorOutput "`n🔧 Development Mode Enabled" $Yellow
+        Write-ColorOutput "   • Verbose logging enabled" $White
+        Write-ColorOutput "   • Debug output will be shown in logs" $White
+        Write-ColorOutput "   • Additional diagnostic information will be captured" $White
+    }
 }
 
 # Check admin privileges upfront
@@ -709,6 +750,19 @@ if ($PSVersionTable.Platform -ne "Unix") {
         Write-ColorOutput "Please right-click PowerShell and select 'Run as Administrator', then try again." $Yellow
         exit 1
     }
+}
+
+# Important notice about location services for automatic timezone
+if (-not $Force) {
+    Write-ColorOutput "`n📍 IMPORTANT: Location Services Notice" $Yellow
+    Write-ColorOutput "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" $Yellow
+    Write-ColorOutput "For automatic timezone detection to work properly, you may need to:" $White
+    Write-ColorOutput "  1. Enable Location Services in Windows Settings" $White
+    Write-ColorOutput "  2. Go to: Settings > Privacy & Security > Location" $White
+    Write-ColorOutput "  3. Turn on 'Location services'" $White
+    Write-ColorOutput "  4. Allow apps to access your location" $White
+    Write-ColorOutput "`nThe script will configure automatic timezone, but manual location permission may be required." $White
+    Write-ColorOutput "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" $Yellow
 }
 
 if (-not $Quiet -and -not $Force) {
@@ -763,7 +817,7 @@ $packages = @(
     @{Id="Microsoft.VisualStudioCode"; Name="Visual Studio Code"; Category="Development"},
     @{Id="Microsoft.WindowsTerminal.Preview"; Name="Windows Terminal Preview"; Category="Development"},
     @{Id="Microsoft.WSL"; Name="Windows Subsystem for Linux"; Category="Development"},
-    @{Id="Anthropic.ClaudeCode"; Name="Claude Code"; Category="AI Assistant"},
+    @{Id="Anthropic.Claude"; Name="Claude Desktop"; Category="AI Assistant"},
     @{Id="astral-sh.uv"; Name="UV"; Category="Development"},
     
     # Information Systems Management
@@ -833,12 +887,12 @@ Write-ColorOutput @"
 5. Configure Git with your credentials in WSL: 
    git config --global user.name "Your Name"
    git config --global user.email "your.email@example.com"
-6. Launch VS Code and Claude Code to start coding
+6. Launch VS Code and Claude Desktop to start coding
 7. Verify time zone settings in Windows Settings if needed
 8. Check that dark theme and taskbar settings are applied correctly
 
 💡 Tips:
-• Claude Code is now installed for AI-powered assistance
+• Claude Desktop is now installed for AI-powered assistance
 • UV is available for fast Python package management
 • Pin frequently used applications to your taskbar (now auto-hiding)
 • If Windows Terminal is not pinned, right-click it and select 'Pin to taskbar'
@@ -853,7 +907,7 @@ Write-ColorOutput @"
 • Manual taskbar pinning may be required (see instructions above)
 • Default terminal profile set to WSL (if available) or PowerShell
 • Time sync and timezone are now automatically configured
-• All essential development tools including Claude Code and UV are installed
+• All essential development tools including Claude Desktop and UV are installed
 • WSL distribution installation initiated (first launch will complete setup)
 
 💡 Additional Configuration:
