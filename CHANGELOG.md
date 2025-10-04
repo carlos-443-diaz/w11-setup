@@ -2,6 +2,53 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2025-10-04
+
+### Fixed
+- **Claude Desktop Installation** (Issue #14)
+  - Reverted to Claude Desktop (Anthropic.Claude) from Claude Code as requested
+  - Updated all references throughout script and documentation
+
+- **WSL Installation Messaging** (Issue #14)
+  - Significantly improved error messages for WSL distribution installation
+  - Better distinction between "distribution not found" errors and installation failures
+  - Added clearer messaging about attempting installation vs warning about manual steps
+  - Enhanced debugging output for troubleshooting OpenSUSE and other distributions
+  - Script now clearly indicates when it attempts installation and why it might fail
+
+### Added
+- **Development Mode Flag** (Issue #14)
+  - New `-DevMode` parameter for enhanced debugging and development
+  - Enables verbose logging with DEBUG level output
+  - Provides detailed diagnostic information during installation
+  - Logs detailed exit codes, command output, and installation steps
+  - Documented in README.md with usage examples
+
+- **Location Services Early Warning** (Issue #14)
+  - Moved location services warning to the beginning of script execution
+  - Displays prominent notice before installation starts
+  - Provides clear instructions for enabling location services
+  - Reduces confusion about automatic timezone configuration
+
+- **GitHub Actions Workflows** (Issue #14)
+  - **Version Bump Workflow**: Automated version management with changelog updates
+  - **Changelog Validation**: Validates CHANGELOG.md format and suggests next version
+  - **Script Validation**: Checks PowerShell syntax and documentation completeness
+  - All workflows documented in README.md
+
+### Changed
+- **Enhanced Logging System**
+  - Install-WingetPackage now includes DEBUG level logging for all operations
+  - Install-WSLDistribution includes detailed logging of all steps
+  - DevMode enables real-time DEBUG output to console
+  - Better traceability for troubleshooting installation issues
+
+- **Improved Documentation**
+  - Updated README.md with DevMode usage and benefits
+  - Added GitHub Actions documentation for contributors
+  - Updated all references from Claude Code to Claude Desktop
+  - Better guidance on development and testing workflows
+
 ## [1.3.4] - 2025-10-04
 
 ### Added

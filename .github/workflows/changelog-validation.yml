@@ -1,0 +1,94 @@
+name: Changelog Validation
+
+on:
+  pull_request:
+    paths:
+      - 'CHANGELOG.md'
+      - 'setup-w11.ps1'
+  push:
+    branches:
+      - main
+    paths:
+      - 'CHANGELOG.md'
+
+jobs:
+  validate-changelog:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Validate CHANGELOG format
+        run: |
+          echo "Validating CHANGELOG.md format..."
+          
+          # Check if CHANGELOG.md exists
+          if [ ! -f "CHANGELOG.md" ]; then
+            echo "❌ CHANGELOG.md not found"
+            exit 1
+          fi
+          
+          # Check for proper header
+          if ! grep -q "^# Changelog" CHANGELOG.md; then
+            echo "❌ CHANGELOG.md missing '# Changelog' header"
+            exit 1
+          fi
+          
+          # Check for version entries (format: ## [X.Y.Z] - YYYY-MM-DD)
+          if ! grep -q "^## \[[0-9]\+\.[0-9]\+\.[0-9]\+\]" CHANGELOG.md; then
+            echo "⚠️  Warning: No version entries found in CHANGELOG.md"
+          fi
+          
+          # Check for date format in version entries
+          INVALID_DATES=$(grep "^## \[" CHANGELOG.md | grep -v "\- [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}" || true)
+          if [ -n "$INVALID_DATES" ]; then
+            echo "⚠️  Warning: Some version entries have invalid or missing dates:"
+            echo "$INVALID_DATES"
+          fi
+          
+          echo "✅ CHANGELOG.md format validation passed"
+      
+      - name: Check for unreleased changes
+        run: |
+          echo "Checking for recent commits that may need changelog entries..."
+          
+          # Get the latest version from CHANGELOG
+          LATEST_VERSION=$(grep -m 1 "^## \[" CHANGELOG.md | sed -n 's/^## \[\(.*\)\].*/\1/p')
+          echo "Latest version in CHANGELOG: $LATEST_VERSION"
+          
+          # Get recent commits (last 10)
+          echo ""
+          echo "Recent commits:"
+          git log --oneline -10
+          
+          echo ""
+          echo "ℹ️  If recent changes are not documented, consider updating the CHANGELOG"
+      
+      - name: Suggest next version
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Analyzing changes to suggest next version..."
+          
+          # Get current version
+          CURRENT_VERSION=$(grep -m 1 "^## \[" CHANGELOG.md | sed -n 's/^## \[\(.*\)\].*/\1/p')
+          IFS='.' read -r -a parts <<< "$CURRENT_VERSION"
+          MAJOR="${parts[0]}"
+          MINOR="${parts[1]}"
+          PATCH="${parts[2]}"
+          
+          # Calculate next versions
+          NEXT_MAJOR="$((MAJOR + 1)).0.0"
+          NEXT_MINOR="$MAJOR.$((MINOR + 1)).0"
+          NEXT_PATCH="$MAJOR.$MINOR.$((PATCH + 1))"
+          
+          echo ""
+          echo "📊 Version Suggestions:"
+          echo "  Current: $CURRENT_VERSION"
+          echo "  Patch (bug fixes): $NEXT_PATCH"
+          echo "  Minor (new features): $NEXT_MINOR"
+          echo "  Major (breaking changes): $NEXT_MAJOR"
+          echo ""
+          echo "Use the 'Version Bump' workflow to create a version bump PR"

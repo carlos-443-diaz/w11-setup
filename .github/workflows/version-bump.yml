@@ -1,0 +1,116 @@
+name: Version Bump
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      changelog_entry:
+        description: 'Brief description of changes'
+        required: true
+        type: string
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Get current version
+        id: current_version
+        run: |
+          # Extract version from CHANGELOG.md (format: ## [X.Y.Z])
+          CURRENT_VERSION=$(grep -m 1 "^## \[" CHANGELOG.md | sed -n 's/^## \[\(.*\)\].*/\1/p')
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+      
+      - name: Calculate new version
+        id: new_version
+        run: |
+          VERSION="${{ steps.current_version.outputs.version }}"
+          IFS='.' read -r -a parts <<< "$VERSION"
+          MAJOR="${parts[0]}"
+          MINOR="${parts[1]}"
+          PATCH="${parts[2]}"
+          
+          case "${{ inputs.version_type }}" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+          
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $NEW_VERSION"
+      
+      - name: Update CHANGELOG.md
+        run: |
+          NEW_VERSION="${{ steps.new_version.outputs.version }}"
+          DATE=$(date +%Y-%m-%d)
+          CHANGELOG_ENTRY="${{ inputs.changelog_entry }}"
+          
+          # Create new changelog entry
+          NEW_ENTRY="## [$NEW_VERSION] - $DATE
+
+### Changed
+- $CHANGELOG_ENTRY
+
+"
+          
+          # Insert new entry after "# Changelog" header
+          awk -v new="$NEW_ENTRY" '
+            /^# Changelog/ {
+              print
+              if (getline) print  # Print empty line after header
+              print new
+              next
+            }
+            {print}
+          ' CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: bump version to ${{ steps.new_version.outputs.version }}"
+          title: "Version bump to ${{ steps.new_version.outputs.version }}"
+          body: |
+            ## Version Bump: ${{ steps.new_version.outputs.version }}
+            
+            **Type:** ${{ inputs.version_type }}
+            
+            **Changes:**
+            - ${{ inputs.changelog_entry }}
+            
+            ---
+            
+            This PR was automatically created by the version bump workflow.
+          branch: version-bump-${{ steps.new_version.outputs.version }}
+          delete-branch: true
+          labels: version-bump,automated

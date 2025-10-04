@@ -25,7 +25,7 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 - **Visual Studio Code** - Modern code editor with extensive extensions
 - **Windows Terminal Preview** - Enhanced terminal with tabs and customization (auto-pinned to taskbar)
 - **Windows Subsystem for Linux (WSL)** - Run Linux environments with Git
-- **Claude Code** - AI-powered coding assistant for enhanced productivity
+- **Claude Desktop** - AI-powered coding assistant for enhanced productivity
 - **UV** - Fast Python package installer and resolver for modern Python development
 
 ### 🔧 Information Systems Management
@@ -79,6 +79,9 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 # Specify WSL Linux distribution
 .\setup-w11.ps1 -WSLDistro "Ubuntu-22.04"
 
+# Enable development mode with verbose logging
+.\setup-w11.ps1 -DevMode
+
 # Combine options for fully automated installation
 .\setup-w11.ps1 -Force -SkipUpdates -WSLDistro "Debian"
 
@@ -92,6 +95,7 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 - **`-Force`** - Completely silent execution with no prompts or progress output
 - **`-SkipUpdates`** - Skips updating winget sources before installation
 - **`-WSLDistro`** - Specifies the Linux distribution for WSL (default: Ubuntu)
+- **`-DevMode`** - Enables development mode with verbose logging and detailed debugging output
 
 ### Available WSL Distributions
 
@@ -262,6 +266,42 @@ The following cannot be fully automated due to Windows 11 security restrictions:
 Found an issue or want to suggest a package? 
 - Open an [issue](https://github.com/carlos-443-diaz/w11-setup/issues)
 - Submit a [pull request](https://github.com/carlos-443-diaz/w11-setup/pulls)
+
+### Development and Testing
+
+When developing or troubleshooting the script, use **DevMode** for enhanced debugging:
+
+```powershell
+.\setup-w11.ps1 -DevMode
+```
+
+This enables:
+- **Verbose logging** - All operations are logged with DEBUG level details
+- **Detailed output** - Installation attempts, exit codes, and full command output
+- **Error diagnostics** - Enhanced error capture for troubleshooting
+- **Log file inspection** - Check `$env:TEMP\w11-setup-log.txt` for complete execution details
+
+### Automated Version Management
+
+This repository uses GitHub Actions for version management:
+
+#### Version Bump Workflow
+To create a new version:
+1. Go to **Actions** → **Version Bump**
+2. Click **Run workflow**
+3. Select version type (patch/minor/major)
+4. Enter a brief description of changes
+5. A PR will be automatically created with the updated CHANGELOG
+
+#### Changelog Validation
+- Automatically validates CHANGELOG.md format on all PRs
+- Checks version number formatting and date consistency
+- Suggests appropriate next version based on changes
+
+#### Script Validation
+- Validates PowerShell syntax on all script changes
+- Checks for proper documentation and required parameters
+- Ensures code quality standards are met
 
 ## 📄 License
 
