@@ -25,6 +25,7 @@ irm https://raw.githubusercontent.com/carlos-443-diaz/w11-setup/main/setup-w11.p
 - **Visual Studio Code** - Modern code editor with extensive extensions
 - **Windows Terminal Preview** - Enhanced terminal with tabs and customization (auto-pinned to taskbar)
 - **Windows Subsystem for Linux (WSL)** - Run Linux environments with Git
+- **Claude Desktop** - AI-powered coding assistant for enhanced productivity
 
 ### 🔧 Information Systems Management
 - **1Password** - Secure password manager and digital vault

@@ -40,12 +40,13 @@ The script will:
 4. Update winget sources (unless -SkipUpdates is used)
 5. Show installation summary
 6. Check each package and install only if not already present (idempotent)
-7. Configure time and date settings
-8. Configure desktop theme and appearance
-9. Configure taskbar settings and layout
-10. Configure widget and feed preferences
-11. Pin Windows Terminal Preview to taskbar
-12. Configure Windows Terminal default profile (WSL or PowerShell)
+7. Install selected WSL Linux distribution (Ubuntu by default)
+8. Configure time and date settings
+9. Configure desktop theme and appearance
+10. Configure taskbar settings and layout
+11. Configure widget and feed preferences
+12. Pin Windows Terminal Preview to taskbar
+13. Configure Windows Terminal default profile (WSL or PowerShell)
 
 ## Re-running the Script
 
@@ -64,6 +65,7 @@ The script is designed to be **idempotent** - it can be run multiple times safel
 - Microsoft.VisualStudioCode
 - Microsoft.WindowsTerminal.Preview  
 - Microsoft.WSL
+- Anthropic.Claude
 
 ### Security & Productivity
 - AgileBits.1Password
